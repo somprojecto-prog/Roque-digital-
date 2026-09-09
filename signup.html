@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roque Digital — Criar Conta de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, var(--brown-700), var(--brown-900) 65%); padding:20px; }
+  .auth-box{ width:100%; max-width:420px; background:var(--white); border-radius:20px; padding:38px 34px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.5); }
+  .auth-logo{ width:64px; height:64px; border-radius:50%; overflow:hidden; margin:0 auto 18px; border:3px solid var(--gold); }
+  .auth-logo img{ width:100%; height:100%; object-fit:cover; }
+  .auth-title{ text-align:center; font-size:21px; margin-bottom:4px; }
+  .auth-sub{ text-align:center; font-size:13px; color:var(--text-soft); margin-bottom:26px; }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:6px; }
+  .field input{ width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:10px; font-size:14px; font-family:inherit; }
+  .field input:focus{ outline:none; border-color:var(--brown-700); }
+  .role-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .role-opt{ border:1.5px solid var(--line); border-radius:10px; padding:13px 10px; text-align:center; cursor:pointer; transition:.15s; }
+  .role-opt.selected{ border-color:var(--brown-700); background:var(--cream-2); }
+  .role-opt .ic{ font-size:20px; margin-bottom:4px; }
+  .role-opt .lbl{ font-size:12.5px; font-weight:700; }
+  .role-opt .desc{ font-size:10.5px; color:var(--text-soft); margin-top:2px; }
+  .auth-btn{ width:100%; margin-top:4px; }
+  .auth-foot{ text-align:center; font-size:13px; color:var(--text-soft); margin-top:20px; }
+  .auth-foot a{ color:var(--brown-700); font-weight:700; }
+  .msg{ font-size:12.5px; text-align:center; margin-top:14px; padding:10px; border-radius:8px; display:none; }
+  .msg.error{ background:#FBEAE6; color:var(--danger); display:block; }
+  .msg.ok{ background:#E4F3E9; color:var(--success); display:block; }
+  .back-link{ position:fixed; top:20px; left:20px; color:var(--cream-2); font-size:13px; font-weight:600; opacity:.8; }
+</style>
+</head>
+<body>
+
+<a href="index.html" class="back-link">← Voltar ao login</a>
+
+<div class="auth-box">
+  <div class="auth-logo"><img src="../assets/logo.png" alt="Roque Digital"></div>
+  <h1 class="auth-title" style="text-align:center;">Criar conta de acesso</h1>
+  <p class="auth-sub">Regista-te como Administrador ou Gestor</p>
+
+  <form id="signupForm">
+    <div class="field">
+      <label>Nome completo</label>
+      <input type="text" id="fullName" required placeholder="O teu nome">
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="email" required placeholder="oteuemail@exemplo.com">
+    </div>
+    <div class="field">
+      <label>Palavra-passe</label>
+      <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
+    </div>
+
+    <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Função</label>
+    <div class="role-row">
+      <div class="role-opt selected" data-role="admin" onclick="selectRole('admin')">
+        <div class="ic">👑</div>
+        <div class="lbl">Admin</div>
+        <div class="desc">Controlo total da loja</div>
+      </div>
+      <div class="role-opt" data-role="gestor" onclick="selectRole('gestor')">
+        <div class="ic">👨‍💼</div>
+        <div class="lbl">Gestor</div>
+        <div class="desc">Produtos, pedidos e stock</div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary auth-btn">Criar conta</button>
+    <div id="msg" class="msg"></div>
+  </form>
+
+  <p class="auth-foot">Já tens conta? <a href="index.html">Entrar</a></p>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "COLA_AQUI_A_TUA_ANON_KEY";
+  const supabase = SUPABASE_URL.startsWith("http") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  let selectedRole = 'admin';
+  function selectRole(role){
+    selectedRole = role;
+    document.querySelectorAll('.role-opt').forEach(el=> el.classList.toggle('selected', el.dataset.role === role));
+  }
+
+  const form = document.getElementById('signupForm');
+  const msg = document.getElementById('msg');
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    if(!supabase){
+      msg.className = 'msg error';
+      msg.textContent = 'Liga o Supabase primeiro (edita SUPABASE_URL e SUPABASE_ANON_KEY neste ficheiro).';
+      return;
+    }
+
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if(error){
+      msg.className = 'msg error';
+      msg.textContent = error.message.includes('already') ? 'Este email já tem conta.' : 'Erro ao criar conta: ' + error.message;
+      return;
+    }
+
+    // Cria o perfil com a função escolhida (admin ou gestor)
+    const { error: profileError } = await supabase.from('profiles').insert({
+      id: data.user.id,
+      full_name: fullName,
+      email: email,
+      role: selectedRole
+    });
+
+    if(profileError){
+      msg.className = 'msg error';
+      msg.textContent = 'Conta criada, mas houve um erro ao guardar o perfil. Contacta o suporte.';
+      return;
+    }
+
+    msg.className = 'msg ok';
+    msg.textContent = 'Conta criada com sucesso! Verifica o teu email para confirmar, depois inicia sessão.';
+    form.reset();
+  });
+</script>
+
+</body>
+</html>

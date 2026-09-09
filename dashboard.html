@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roque Digital — Painel de Gestão</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .mgr-shell{ display:flex; min-height:100vh; }
+  .mgr-sidebar{ width:236px; background:var(--brown-900); color:#D9C7B4; flex-shrink:0; display:flex; flex-direction:column; padding:20px 14px; }
+  .mgr-brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 22px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px; }
+  .mgr-brand .logo-circle{ width:38px; height:38px; border-radius:50%; overflow:hidden; border:2px solid var(--gold); flex-shrink:0; }
+  .mgr-brand .logo-circle img{ width:100%; height:100%; object-fit:cover; }
+  .mgr-brand-text{ font-family:'Fraunces',serif; font-weight:700; font-size:15px; color:var(--cream); line-height:1.15; }
+  .mgr-brand-text span{ display:block; font-family:'Inter',sans-serif; font-size:9.5px; color:var(--gold-light); letter-spacing:0.1em; font-weight:700; margin-top:2px; }
+  .mgr-nav-group{ margin-bottom:14px; }
+  .mgr-nav-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; color:#8C7A68; padding:8px 10px 6px; font-weight:700; }
+  .mgr-nav a{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; font-size:13.5px; font-weight:500; color:#D9C7B4; margin-bottom:2px; transition:.15s; }
+  .mgr-nav a:hover{ background:rgba(255,255,255,0.06); color:var(--cream); }
+  .mgr-nav a.active{ background:var(--gold); color:var(--brown-900); font-weight:700; }
+  .mgr-nav a .ic{ width:18px; text-align:center; }
+  .mgr-signout{ margin-top:auto; padding:12px 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:#B5A48C; }
+  .mgr-signout button{ background:transparent; color:#E8C88F; font-weight:700; font-size:12.5px; }
+
+  .mgr-main{ flex:1; min-width:0; background:var(--cream); }
+  .mgr-topbar{ background:var(--white); border-bottom:1px solid var(--line); padding:14px 30px; display:flex; align-items:center; gap:20px; }
+  .mgr-topbar .search-bar{ flex:1; max-width:340px; position:relative; }
+  .mgr-topbar .search-bar input{ width:100%; padding:10px 14px 10px 36px; border:1.5px solid var(--line); border-radius:999px; font-size:13.5px; background:var(--cream); }
+  .mgr-topbar .search-bar .icon{ position:absolute; left:13px; top:50%; transform:translateY(-50%); opacity:.5; font-size:13px; }
+  .mgr-user{ display:flex; align-items:center; gap:10px; margin-left:auto; font-size:13.5px; font-weight:600; }
+  .mgr-user .dot{ width:34px; height:34px; border-radius:50%; background:var(--gold-light); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--brown-900); }
+  .role-tag{ font-size:10.5px; font-weight:700; padding:2px 9px; border-radius:999px; background:var(--cream-2); color:var(--brown-700); text-transform:capitalize; }
+
+  .mgr-body{ padding:26px 30px 60px; }
+  .mgr-body h1{ font-size:23px; margin-bottom:4px; }
+  .mgr-sub{ color:var(--text-soft); font-size:13.5px; margin-bottom:24px; }
+
+  .kpi-grid{ display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px; }
+  .kpi-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .kpi-label{ font-size:12.5px; color:var(--text-soft); font-weight:600; margin-bottom:8px; }
+  .kpi-value{ font-size:24px; font-weight:700; color:var(--brown-900); font-family:'Fraunces',serif; }
+  .kpi-delta{ font-size:12px; font-weight:600; margin-top:6px; }
+  .kpi-delta.up{ color:var(--success); }
+  .kpi-delta.down{ color:var(--danger); }
+
+  .alert-box{ background:#FBF1E0; border:1px solid var(--gold-light); border-radius:14px; padding:16px 20px; margin-bottom:24px; }
+  .alert-box .title{ font-weight:700; font-size:13.5px; color:var(--brown-700); margin-bottom:8px; }
+  .alert-box ul{ list-style:none; font-size:13px; color:var(--text); line-height:1.9; }
+  .alert-box li::before{ content:'•'; color:var(--gold); margin-right:8px; font-weight:900; }
+
+  .mgr-grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:18px; margin-bottom:24px; }
+  .panel{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:20px 22px; }
+  .panel h3{ font-size:15px; margin-bottom:16px; }
+
+  table.mgr-table{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.mgr-table th{ text-align:left; color:var(--text-soft); font-weight:600; font-size:12px; padding:8px 10px; border-bottom:1.5px solid var(--line); }
+  table.mgr-table td{ padding:11px 10px; border-bottom:1px solid var(--line); }
+  table.mgr-table tr:last-child td{ border-bottom:none; }
+  .status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; display:inline-block; }
+  .status-pill.paid{ background:#E4F3E9; color:var(--success); }
+  .status-pill.prep{ background:#FBF1E0; color:var(--brown-700); }
+  .status-pill.sent{ background:#E6EEFB; color:#2b5fc2; }
+
+  .mgr-toolbar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .chip{ font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px; background:var(--cream-2); color:var(--text-soft); }
+  .chip.active{ background:var(--brown-900); color:var(--cream); }
+  .btn-add{ margin-left:auto; }
+
+  .field-row{ display:grid; grid-template-columns:180px 1fr; gap:16px; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); }
+  .field-row label{ font-size:13px; font-weight:600; color:var(--text-soft); }
+  .field-row input, .field-row textarea{ width:100%; padding:9px 12px; border:1.5px solid var(--line); border-radius:9px; font-size:13.5px; font-family:inherit; }
+
+  .mgr-panel{ display:none; }
+  .mgr-panel.active{ display:block; }
+
+  .gate{ position:fixed; inset:0; background:var(--brown-900); color:var(--cream); display:flex; align-items:center; justify-content:center; z-index:999; font-family:'Inter',sans-serif; font-size:14px; }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">A verificar sessão...</div>
+
+<div class="mgr-shell" id="mgrShell" style="display:none;">
+  <aside class="mgr-sidebar">
+    <div class="mgr-brand">
+      <div class="logo-circle"><img src="../assets/logo.png" alt="Roque Digital"></div>
+      <div class="mgr-brand-text">Roque Digital<span>PAINEL DE GESTÃO</span></div>
+    </div>
+    <nav class="mgr-nav">
+      <div class="mgr-nav-group"><a href="#" class="active" onclick="return mgrTab(event,'dash')"><span class="ic">📊</span> Dashboard</a></div>
+      <div class="mgr-nav-group">
+        <div class="mgr-nav-label">Catálogo</div>
+        <a href="#" onclick="return mgrTab(event,'produtos')"><span class="ic">🛍</span> Produtos</a>
+        <a href="#" onclick="return mgrTab(event,'stock')"><span class="ic">📦</span> Inventário</a>
+      </div>
+      <div class="mgr-nav-group">
+        <div class="mgr-nav-label">Vendas</div>
+        <a href="#" onclick="return mgrTab(event,'encomendas')"><span class="ic">📦</span> Encomendas</a>
+      </div>
+      <div class="mgr-nav-group">
+        <div class="mgr-nav-label">Loja</div>
+        <a href="#" onclick="return mgrTab(event,'conteudo')"><span class="ic">📝</span> Conteúdo do site</a>
+        <a href="#" onclick="return mgrTab(event,'imagens')"><span class="ic">🖼</span> Imagens</a>
+      </div>
+      <div class="mgr-nav-group">
+        <div class="mgr-nav-label">Sistema</div>
+        <a href="#" onclick="return mgrTab(event,'equipa')"><span class="ic">👥</span> Equipa</a>
+      </div>
+    </nav>
+    <div class="mgr-signout">
+      Sessão de <strong id="userName">—</strong>
+      <div><button onclick="terminarSessao()">Terminar sessão →</button></div>
+    </div>
+  </aside>
+
+  <div class="mgr-main">
+    <div class="mgr-topbar">
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Pesquisar no painel..."></div>
+      <div class="mgr-user"><div class="dot" id="userInitial">?</div> <span id="userNameTop">—</span> <span class="role-tag" id="userRole">—</span></div>
+    </div>
+
+    <div class="mgr-body">
+      <div class="mgr-panel active" id="mgr-dash">
+        <h1>Bom dia 👋</h1>
+        <p class="mgr-sub">Aqui está o que está a acontecer na tua loja hoje.</p>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">💰 Vendas hoje</div><div class="kpi-value">850.000 Kz</div><div class="kpi-delta up">▲ 12% vs ontem</div></div>
+          <div class="kpi-card"><div class="kpi-label">📦 Pedidos</div><div class="kpi-value">124</div><div class="kpi-delta up">▲ 8 novos</div></div>
+          <div class="kpi-card"><div class="kpi-label">👥 Clientes</div><div class="kpi-value">1.286</div><div class="kpi-delta up">▲ 24 esta semana</div></div>
+          <div class="kpi-card"><div class="kpi-label">🛒 Carrinhos abandonados</div><div class="kpi-value">17</div><div class="kpi-delta down">▼ 3%</div></div>
+        </div>
+        <div class="alert-box">
+          <div class="title">⚠️ Precisa da tua atenção</div>
+          <ul><li>8 produtos com stock baixo</li><li>12 encomendas aguardando processamento</li><li>3 pagamentos pendentes</li></ul>
+        </div>
+        <div class="panel">
+          <h3>Últimos pedidos</h3>
+          <table class="mgr-table">
+            <tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>
+            <tr><td>#1024</td><td>João Silva</td><td>75.000 Kz</td><td><span class="status-pill paid">Pago</span></td></tr>
+            <tr><td>#1023</td><td>Maria Costa</td><td>120.000 Kz</td><td><span class="status-pill prep">Preparando</span></td></tr>
+            <tr><td>#1022</td><td>Paulo Santos</td><td>45.000 Kz</td><td><span class="status-pill sent">Enviado</span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="mgr-panel" id="mgr-produtos">
+        <h1>Produtos</h1><p class="mgr-sub">Gere o catálogo — nome, descrição, imagens, preço e stock.</p>
+        <div class="mgr-toolbar"><div class="chip active">Todos</div><div class="chip">Ativos</div><div class="chip">Stock baixo</div><button class="btn btn-primary btn-add">+ Adicionar produto</button></div>
+        <div class="panel">
+          <table class="mgr-table">
+            <tr><th>Produto</th><th>Categoria</th><th>Stock</th><th>Preço</th><th>Estado</th></tr>
+            <tr><td>iPhone 15 Pro</td><td>Telefones</td><td>12</td><td>850.000 Kz</td><td><span class="status-pill paid">Ativo</span></td></tr>
+            <tr><td>Perfume Élan</td><td>Perfumes</td><td>5</td><td>35.000 Kz</td><td><span class="status-pill prep">Stock baixo</span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="mgr-panel" id="mgr-stock">
+        <h1>Inventário</h1><p class="mgr-sub">Alertas automáticos quando o stock atinge o limite definido.</p>
+        <div class="panel">
+          <table class="mgr-table"><tr><th>Produto</th><th>Stock</th><th>Estado</th></tr>
+          <tr><td>iPhone 15</td><td>12</td><td><span class="status-pill paid">Normal</span></td></tr>
+          <tr><td>AirPods</td><td>2</td><td><span class="status-pill prep">Crítico</span></td></tr></table>
+        </div>
+      </div>
+
+      <div class="mgr-panel" id="mgr-encomendas">
+        <h1>Encomendas</h1><p class="mgr-sub">Acompanha e atualiza o estado de cada pedido.</p>
+        <div class="panel">
+          <table class="mgr-table"><tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>
+          <tr><td>#1042</td><td>João Silva</td><td>85.000 Kz</td><td><span class="status-pill prep">Preparando</span></td></tr></table>
+        </div>
+      </div>
+
+      <div class="mgr-panel" id="mgr-conteudo">
+        <h1>Conteúdo do site</h1><p class="mgr-sub">Edita textos e banners sem tocar no código.</p>
+        <div class="panel">
+          <div class="field-row"><label>Nome da loja</label><input type="text" value="Roque Digital"></div>
+          <div class="field-row"><label>Slogan</label><input type="text" value="Qualidade que combina contigo."></div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px;">Guardar alterações</button>
+      </div>
+
+      <div class="mgr-panel" id="mgr-imagens">
+        <h1>Imagens</h1><p class="mgr-sub">Substitui logo, banners e imagens de produtos.</p>
+        <div class="panel"><p style="font-size:13px; color:var(--text-soft);">Liga o Supabase Storage para ativar o upload de imagens aqui.</p></div>
+      </div>
+
+      <div class="mgr-panel" id="mgr-equipa">
+        <h1>Equipa</h1><p class="mgr-sub">Contas com acesso ao painel (Admin e Gestor).</p>
+        <div class="panel" id="teamPanel">
+          <table class="mgr-table" id="teamTable"><tr><th>Nome</th><th>Email</th><th>Função</th></tr></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "COLA_AQUI_A_TUA_ANON_KEY";
+  const supabase = SUPABASE_URL.startsWith("http") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  async function verificarSessao(){
+    if(!supabase){
+      // Modo demonstração sem Supabase ligado
+      document.getElementById('gate').style.display='none';
+      document.getElementById('mgrShell').style.display='flex';
+      document.getElementById('userName').textContent = 'Demo';
+      document.getElementById('userNameTop').textContent = 'Demo';
+      document.getElementById('userRole').textContent = 'admin';
+      document.getElementById('userInitial').textContent = 'D';
+      return;
+    }
+    const { data: { session } } = await supabase.auth.getSession();
+    if(!session){ window.location.href = 'index.html'; return; }
+
+    const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single();
+    if(!profile || (profile.role !== 'admin' && profile.role !== 'gestor')){
+      await supabase.auth.signOut();
+      window.location.href = 'index.html';
+      return;
+    }
+
+    document.getElementById('userName').textContent = profile.full_name;
+    document.getElementById('userNameTop').textContent = profile.full_name;
+    document.getElementById('userRole').textContent = profile.role;
+    document.getElementById('userInitial').textContent = profile.full_name.charAt(0).toUpperCase();
+    document.getElementById('gate').style.display='none';
+    document.getElementById('mgrShell').style.display='flex';
+
+    // Carrega a equipa (apenas admin/gestor visível para si próprios via RLS)
+    const { data: team } = await supabase.from('profiles').select('full_name, email, role');
+    if(team){
+      const table = document.getElementById('teamTable');
+      team.forEach(t=>{
+        table.innerHTML += `<tr><td>${t.full_name}</td><td>${t.email}</td><td><span class="status-pill paid">${t.role}</span></td></tr>`;
+      });
+    }
+  }
+  verificarSessao();
+
+  async function terminarSessao(){
+    if(supabase) await supabase.auth.signOut();
+    window.location.href = 'index.html';
+  }
+
+  function mgrTab(e, name){
+    e.preventDefault();
+    document.querySelectorAll('.mgr-nav a').forEach(a=>a.classList.remove('active'));
+    e.currentTarget.classList.add('active');
+    document.querySelectorAll('.mgr-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('mgr-'+name).classList.add('active');
+    return false;
+  }
+</script>
+
+</body>
+</html>
