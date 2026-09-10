@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produto — Roque Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+<style>
+  body{ padding-bottom:78px; }
+  .client-header{ background:var(--brown-900); position:sticky; top:0; z-index:100; }
+  .header-top{ max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:14px; padding:16px 24px; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand .logo-box{ width:44px; height:44px; border-radius:12px; overflow:hidden; background:var(--white); flex-shrink:0; }
+  .brand .logo-box img{ width:100%; height:100%; object-fit:cover; }
+  .brand-name{ font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--cream); }
+  .brand-name span{ display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.14em; color:var(--gold); margin-top:2px; }
+  .back-link{ margin-left:auto; color:var(--cream); font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:6px; border:1px solid rgba(255,255,255,0.16); padding:9px 16px; border-radius:999px; }
+  .back-link:hover{ background:rgba(255,255,255,0.08); }
+
+  main.product-main{ max-width:1100px; margin:0 auto; padding:44px 24px 90px; }
+  .product-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:48px; margin-bottom:64px; }
+  .product-image{ background:var(--cream-2); border-radius:24px; border:1px solid var(--line); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; }
+  .p-brand{ font-size:13px; color:var(--text-soft); font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
+  .p-name{ font-size:30px; margin-bottom:12px; }
+  .p-meta-row{ display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+  .p-price-row{ display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
+  .p-price{ font-size:28px; font-weight:700; color:var(--brown-900); }
+  .p-old{ font-size:16px; color:var(--text-soft); text-decoration:line-through; }
+  .p-desc{ font-size:14.5px; line-height:1.75; color:var(--text-soft); margin-bottom:26px; max-width:480px; }
+  .qty-row{ display:flex; align-items:center; gap:14px; margin-bottom:24px; }
+  .qty-box{ display:flex; align-items:center; border:1.5px solid var(--line); border-radius:12px; overflow:hidden; }
+  .qty-box button{ width:38px; height:38px; background:var(--cream-2); font-size:16px; font-weight:700; color:var(--brown-900); }
+  .qty-box span{ width:42px; text-align:center; font-weight:700; }
+  .p-actions{ display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .p-actions .btn{ flex:1; min-width:180px; }
+  .btn-fav{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 22px; border-radius:10px; font-weight:600; font-size:14.5px; border:1.5px solid var(--line); background:var(--white); color:var(--brown-900); }
+  .btn-fav.active{ border-color:var(--danger); color:var(--danger); }
+  .p-toast{ font-size:12.5px; color:var(--success); font-weight:700; height:18px; margin-bottom:10px; }
+  .p-specs{ margin-top:26px; border-top:1px solid var(--line); padding-top:20px; }
+  .p-specs li{ font-size:13px; color:var(--text-soft); line-height:2; }
+
+  .reviews-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; }
+  .reviews-head h2{ font-size:22px; }
+  .review-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:14px; }
+  .review-stars{ color:var(--gold); font-size:13.5px; margin-bottom:8px; letter-spacing:2px; }
+  .review-text{ font-size:13.5px; color:var(--text); line-height:1.65; margin-bottom:10px; }
+  .review-name{ font-size:12px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.04em; }
+
+  footer.store-footer{ background:var(--brown-900); color:#C9B8A5; padding:40px 24px 22px; text-align:center; font-size:12.5px; }
+
+  @media (max-width:840px){
+    .product-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="client-header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="logo-box"><img src="../assets/logo.png" alt="Roque Digital"></div>
+      <div class="brand-name">Roque Digital<span>LOJA ONLINE</span></div>
+    </div>
+    <a href="index.html" class="back-link">← Voltar à loja</a>
+  </div>
+</header>
+
+<main class="product-main">
+  <div class="product-grid">
+    <div class="product-image" id="productImage">📦</div>
+    <div>
+      <div class="p-brand" id="pBrand">Marca</div>
+      <h1 class="p-name" id="pName">Produto</h1>
+      <div class="p-meta-row">
+        <span class="prod-rating" id="pRating">⭐ 4.8 (126 avaliações)</span>
+        <span class="stock-dot" id="pStock">Em stock</span>
+      </div>
+      <div class="p-price-row">
+        <span class="p-old" id="pOld" style="display:none;"></span>
+        <span class="p-price" id="pPrice">0 Kz</span>
+      </div>
+      <p class="p-desc" id="pDesc">Descrição do produto.</p>
+
+      <div class="qty-row">
+        <span style="font-size:13px; font-weight:700; color:var(--text-soft);">Quantidade</span>
+        <div class="qty-box">
+          <button id="qtyMinus">−</button>
+          <span id="qtyValue">1</span>
+          <button id="qtyPlus">+</button>
+        </div>
+      </div>
+
+      <div class="p-toast" id="pToast"></div>
+      <div class="p-actions">
+        <button class="btn btn-gold" id="addCartBtn">Adicionar ao carrinho</button>
+        <button class="btn-fav" id="addFavBtn">♡ Guardar nos favoritos</button>
+      </div>
+
+      <ul class="p-specs">
+        <li>🚚 Entrega em 24–72h em Luanda e arredores</li>
+        <li>🔒 Pagamento seguro — Multicaixa Express, transferência ou na entrega</li>
+        <li>↩️ Trocas e devoluções até 7 dias após a receção</li>
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <div class="reviews-head"><h2>Avaliações de clientes</h2></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Produto exatamente como descrito, chegou bem embalado e dentro do prazo."</p><div class="review-name">Carlos A.</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Ótimo atendimento, esclareceram todas as minhas dúvidas antes da compra."</p><div class="review-name">Márcia P.</div></div>
+    <div class="review-card"><div class="review-stars">★★★★☆</div><p class="review-text">"Muito bom, só demorou um pouco mais que o esperado na entrega."</p><div class="review-name">Edson T.</div></div>
+  </section>
+</main>
+
+<footer class="store-footer">© 2026 Roque Digital. Todos os direitos reservados.</footer>
+
+<script>
+  // Base de dados de demonstração — substitui por dados do Supabase quando ligares o backend
+  const PRODUTOS = {
+    "iphone15pro": { name:"iPhone 15 Pro", brand:"Apple", price:850000, oldPrice:null, emoji:"📱", stock:"in", rating:"⭐ 4.8 (126 avaliações)", desc:"O iPhone 15 Pro traz o chip A17 Pro, câmara profissional e acabamento em titânio. Ideal para quem procura desempenho e elegância no dia a dia." },
+    "perfume-elan": { name:"Perfume Élan", brand:"Lattafa", price:35000, oldPrice:44000, emoji:"🌸", stock:"low", rating:"⭐ 4.6 (58 avaliações)", desc:"Fragrância marcante e duradoura, com notas amadeiradas e florais. Perfeito para uso diário ou ocasiões especiais." },
+    "relogio-aurora": { name:"Relógio Aurora", brand:"Casio", price:50000, oldPrice:null, emoji:"⌚", stock:"in", rating:"⭐ 4.9 (94 avaliações)", desc:"Relógio resistente à água, com design clássico e mecanismo de precisão. Combina com qualquer estilo." },
+    "airpods-pro": { name:"AirPods Pro", brand:"Apple", price:75000, oldPrice:null, emoji:"🎧", stock:"out", rating:"⭐ 4.7 (203 avaliações)", desc:"Cancelamento ativo de ruído, som espacial e até 6h de autonomia. O par ideal para música e chamadas." }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || 'iphone15pro';
+  const p = PRODUTOS[id] || PRODUTOS['iphone15pro'];
+
+  document.getElementById('productImage').textContent = p.emoji;
+  document.getElementById('pBrand').textContent = p.brand;
+  document.getElementById('pName').textContent = p.name;
+  document.getElementById('pRating').textContent = p.rating;
+  document.getElementById('pPrice').textContent = p.price.toLocaleString('pt-PT') + ' Kz';
+  document.getElementById('pDesc').textContent = p.desc;
+  document.title = p.name + " — Roque Digital";
+
+  if(p.oldPrice){
+    const oldEl = document.getElementById('pOld');
+    oldEl.textContent = p.oldPrice.toLocaleString('pt-PT') + ' Kz';
+    oldEl.style.display = 'inline';
+  }
+
+  const stockEl = document.getElementById('pStock');
+  const addCartBtn = document.getElementById('addCartBtn');
+  if(p.stock === 'in'){ stockEl.textContent = 'Em stock'; }
+  else if(p.stock === 'low'){ stockEl.textContent = 'Últimas unidades'; stockEl.classList.add('low'); }
+  else { stockEl.textContent = 'Esgotado'; stockEl.classList.add('out'); addCartBtn.disabled = true; addCartBtn.style.opacity = '.5'; addCartBtn.style.cursor = 'not-allowed'; }
+
+  // Quantidade
+  let qty = 1;
+  const qtyValue = document.getElementById('qtyValue');
+  document.getElementById('qtyMinus').addEventListener('click', ()=>{ if(qty>1){ qty--; qtyValue.textContent = qty; } });
+  document.getElementById('qtyPlus').addEventListener('click', ()=>{ qty++; qtyValue.textContent = qty; });
+
+  // Adicionar ao carrinho (estado local desta página — liga ao Supabase/carrinho partilhado quando o backend estiver pronto)
+  const toast = document.getElementById('pToast');
+  addCartBtn.addEventListener('click', ()=>{
+    if(p.stock === 'out') return;
+    toast.textContent = `✓ ${qty}× ${p.name} adicionado ao carrinho`;
+    setTimeout(()=>{ toast.textContent=''; }, 3000);
+  });
+
+  // Favoritos
+  const favBtn = document.getElementById('addFavBtn');
+  let isFav = false;
+  favBtn.addEventListener('click', ()=>{
+    isFav = !isFav;
+    favBtn.classList.toggle('active', isFav);
+    favBtn.textContent = isFav ? '♥ Guardado nos favoritos' : '♡ Guardar nos favoritos';
+  });
+</script>
+
+</body>
+</html>
