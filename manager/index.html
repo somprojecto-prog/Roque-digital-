@@ -55,10 +55,21 @@
 <script>
   const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
-  const supabase = SUPABASE_URL.startsWith("http") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  let supabase = null;
+  let initError = null;
+  try{
+    if(!window.supabase) throw new Error('sdk-not-loaded');
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }catch(e){ initError = e; console.error('Erro ao iniciar o Supabase:', e); }
 
   const form = document.getElementById('loginForm');
   const msg = document.getElementById('msg');
+
+  if(initError){
+    msg.className = 'msg error';
+    msg.textContent = 'Não foi possível ligar ao servidor (falha ao carregar a biblioteca do Supabase). Verifica a tua ligação à internet e recarrega a página.';
+  }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -67,41 +78,52 @@
 
     if(!supabase){
       msg.className = 'msg error';
-      msg.textContent = 'Liga o Supabase primeiro (edita SUPABASE_URL e SUPABASE_ANON_KEY neste ficheiro).';
+      msg.textContent = 'Não foi possível ligar ao servidor. Verifica a tua ligação à internet e recarrega a página.';
       return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if(error){
+    msg.className = 'msg';
+    msg.style.display = 'none';
+
+    try{
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if(error){
+        msg.className = 'msg error';
+        msg.textContent = 'Email ou palavra-passe incorretos.';
+        return;
+      }
+
+      // Confirma que o utilizador tem um perfil com função admin ou gestor
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', data.user.id)
+        .single();
+
+      if(profileError || !profile || (profile.role !== 'admin' && profile.role !== 'gestor')){
+        msg.className = 'msg error';
+        msg.textContent = 'Esta conta não tem permissão para aceder ao painel (ou o perfil ainda não foi criado).';
+        await supabase.auth.signOut();
+        return;
+      }
+
+      msg.className = 'msg ok';
+      msg.textContent = 'Sessão iniciada. A redirecionar...';
+      setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 700);
+    }catch(err){
+      console.error(err);
       msg.className = 'msg error';
-      msg.textContent = 'Email ou palavra-passe incorretos.';
-      return;
+      msg.textContent = 'Ocorreu um erro inesperado: ' + err.message;
     }
-
-    // Confirma que o utilizador tem um perfil com função admin ou gestor
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', data.user.id)
-      .single();
-
-    if(!profile || (profile.role !== 'admin' && profile.role !== 'gestor')){
-      msg.className = 'msg error';
-      msg.textContent = 'Esta conta não tem permissão para aceder ao painel.';
-      await supabase.auth.signOut();
-      return;
-    }
-
-    msg.className = 'msg ok';
-    msg.textContent = 'Sessão iniciada. A redirecionar...';
-    setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 700);
   });
 
   // Se já houver sessão ativa, vai direto ao dashboard
   (async ()=>{
     if(!supabase) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if(session) window.location.href = 'dashboard.html';
+    try{
+      const { data: { session } } = await supabase.auth.getSession();
+      if(session) window.location.href = 'dashboard.html';
+    }catch(e){ console.error(e); }
   })();
 </script>
 
