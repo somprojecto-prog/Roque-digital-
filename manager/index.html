@@ -6,7 +6,6 @@
 <title>Roque Digital — Acesso ao Painel</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   body{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, var(--brown-700), var(--brown-900) 65%); padding:20px; }
   .auth-box{ width:100%; max-width:400px; background:var(--white); border-radius:20px; padding:38px 34px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.5); }
@@ -52,15 +51,52 @@
   <p class="auth-foot">Ainda não tens conta? <a href="signup.html">Criar conta de acesso</a></p>
 </div>
 
-<script defer>
+<script>
   const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
-  const supabase = SUPABASE_URL.startsWith("http") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
   const form = document.getElementById('loginForm');
   const msg = document.getElementById('msg');
   const btn = form.querySelector('button[type="submit"]');
   const btnTextoOriginal = btn.textContent;
+
+  function carregarScript(src){
+    return new Promise((resolve, reject)=>{
+      const s = document.createElement('script');
+      s.src = src;
+      s.crossOrigin = 'anonymous';
+      s.onload = resolve;
+      s.onerror = ()=> reject(new Error('Falhou carregar: ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  let supabase = null;
+  btn.disabled = true;
+  btn.textContent = 'A ligar…';
+
+  (async ()=>{
+    try{
+      await carregarScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
+      if(!window.supabase) throw new Error('sem window.supabase');
+    } catch(e1){
+      try{
+        await carregarScript('https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js');
+        if(!window.supabase) throw new Error('sem window.supabase');
+      } catch(e2){
+        msg.className = 'msg error';
+        msg.textContent = 'Não foi possível carregar a biblioteca do Supabase (as duas CDNs falharam). Provavelmente a tua rede/operadora ou uma app de bloqueio está a bloquear cdn.jsdelivr.net e unpkg.com. Tenta com Wi-Fi ou desativa bloqueadores de anúncios/rede.';
+        btn.textContent = 'Indisponível';
+        return;
+      }
+    }
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    btn.disabled = false;
+    btn.textContent = btnTextoOriginal;
+    // Se já houver sessão ativa, vai direto ao dashboard
+    const { data: { session } } = await supabase.auth.getSession();
+    if(session) window.location.href = 'dashboard.html';
+  })();
 
   // Rede de segurança: se o Supabase não responder em 10s, mostra erro
   // em vez de deixar o botão preso para sempre.
@@ -136,13 +172,6 @@
     msg.textContent = 'Sessão iniciada. A redirecionar...';
     setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 700);
   });
-
-  // Se já houver sessão ativa, vai direto ao dashboard
-  (async ()=>{
-    if(!supabase) return;
-    const { data: { session } } = await supabase.auth.getSession();
-    if(session) window.location.href = 'dashboard.html';
-  })();
 </script>
 
 </body>
