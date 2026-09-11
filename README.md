@@ -32,7 +32,10 @@ Abre estes 3 ficheiros e substitui `COLA_AQUI_O_TEU_PROJECT_URL` e `COLA_AQUI_A_
    - Cliente: `https://teu-usuario.github.io/nome-repo/loja/`
    - Gestor: `https://teu-usuario.github.io/nome-repo/manager/`
 
-### 4. Criar a primeira conta de Admin
+### 4. Corrigir o registo (signup)
+Corre também `supabase/fix-signup-trigger.sql` no SQL Editor — cria um trigger que gera o perfil automaticamente e evita o erro de permissão durante o registo.
+
+### 5. Criar a primeira conta de Admin
 Abre `manager/signup.html`, escolhe **Admin**, regista-te. Depois entra em `manager/index.html`.
 
 ## Importante — separação Cliente / Gestor
