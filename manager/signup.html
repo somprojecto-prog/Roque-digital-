@@ -6,7 +6,7 @@
 <title>Roque Digital — Criar Conta de Gestão</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 <style>
   body{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, var(--brown-700), var(--brown-900) 65%); padding:20px; }
   .auth-box{ width:100%; max-width:420px; background:var(--white); border-radius:20px; padding:38px 34px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.5); }
@@ -77,7 +77,7 @@
   <p class="auth-foot">Já tens conta? <a href="index.html">Entrar</a></p>
 </div>
 
-<script>
+<script defer>
   const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
   const supabase = SUPABASE_URL.startsWith("http") ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -90,9 +90,22 @@
 
   const form = document.getElementById('signupForm');
   const msg = document.getElementById('msg');
+  const btn = form.querySelector('button[type="submit"]');
+  const btnTextoOriginal = btn.textContent;
+
+  // Rede de segurança: se o Supabase não responder em 10s, mostra erro
+  // em vez de deixar o botão preso para sempre.
+  function comTimeout(promessa, ms){
+    return Promise.race([
+      promessa,
+      new Promise((_, reject)=> setTimeout(()=> reject(new Error('TIMEOUT')), ms))
+    ]);
+  }
 
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
+    msg.className = 'msg';
+    msg.textContent = '';
     const fullName = document.getElementById('fullName').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -103,13 +116,33 @@
       return;
     }
 
-    // O nome e a função vão como metadados da conta — é o trigger no
-    // Supabase (fix-signup-trigger.sql) que cria a linha em "profiles"
-    // automaticamente no servidor, sem depender de sessão nem do site.
-    const { data, error } = await supabase.auth.signUp({
-      email, password,
-      options:{ data:{ full_name: fullName, role: selectedRole } }
-    });
+    btn.disabled = true;
+    btn.textContent = 'A criar conta…';
+
+    let data, error;
+    try{
+      // O nome e a função vão como metadados da conta — é o trigger no
+      // Supabase (fix-signup-trigger.sql) que cria a linha em "profiles"
+      // automaticamente no servidor, sem depender de sessão nem do site.
+      ({ data, error } = await comTimeout(
+        supabase.auth.signUp({
+          email, password,
+          options:{ data:{ full_name: fullName, role: selectedRole } }
+        }),
+        10000
+      ));
+    } catch(e){
+      btn.disabled = false;
+      btn.textContent = btnTextoOriginal;
+      msg.className = 'msg error';
+      msg.textContent = e.message === 'TIMEOUT'
+        ? 'O Supabase não respondeu a tempo (10s). Verifica a ligação à internet ou se o projeto Supabase está ativo.'
+        : 'Erro inesperado: ' + e.message;
+      return;
+    }
+
+    btn.disabled = false;
+    btn.textContent = btnTextoOriginal;
 
     if(error){
       msg.className = 'msg error';
@@ -117,9 +150,16 @@
       return;
     }
 
-    msg.className = 'msg ok';
-    msg.textContent = 'Conta criada com sucesso! Se o teu Supabase exigir confirmação por email, verifica a tua caixa de entrada antes de entrares.';
-    form.reset();
+    if(data.session){
+      // "Confirm email" está desligado — já entrou automaticamente
+      msg.className = 'msg ok';
+      msg.textContent = 'Conta criada e sessão iniciada! A redirecionar...';
+      setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 700);
+    } else {
+      msg.className = 'msg ok';
+      msg.textContent = 'Conta criada com sucesso! O teu Supabase exige confirmação por email — verifica a tua caixa de entrada antes de entrares.';
+      form.reset();
+    }
   });
 </script>
 
