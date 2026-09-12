@@ -35,6 +35,9 @@ Abre estes 3 ficheiros e substitui `COLA_AQUI_O_TEU_PROJECT_URL` e `COLA_AQUI_A_
 ### 4. Corrigir o registo (signup)
 Corre também `supabase/fix-signup-trigger.sql` no SQL Editor — cria um trigger que gera o perfil automaticamente e evita o erro de permissão durante o registo.
 
+### Nota técnica: biblioteca do Supabase local
+A biblioteca do Supabase (`assets/supabase.js`) está guardada dentro do próprio projeto, em vez de vir de um CDN externo (jsDelivr/unpkg). Isto evita falhas de "Liga o Supabase primeiro" ou "Indisponível" causadas por redes móveis, operadoras ou bloqueadores que impeçam o carregamento de scripts externos — o ficheiro carrega sempre do mesmo sítio que o resto do site.
+
 ### 5. Criar a primeira conta de Admin
 Abre `manager/signup.html`, escolhe **Admin**, regista-te. Depois entra em `manager/index.html`.
 
