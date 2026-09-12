@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>O meu carrinho — Roque Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+<script src="../assets/supabase.js"></script>
+<script src="../assets/store-common.js"></script>
+<style>
+  :root{
+    --bg:#0A0603; --bg-2:#160D07; --surface:#20140A;
+    --brown:#4A2A18; --brown-light:#6B3D22; --brown-deep:#1B0F07;
+    --gold:#C08A3E; --gold-light:#E0B173;
+    --text:#F4ECE1; --text-soft:#B9A48C; --line:#3A2A1A;
+    --shadow:0 14px 34px -14px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  h1,h2,h3{ font-family:'Fraunces',serif; color:var(--text); font-weight:600; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; }
+  img{ max-width:100%; display:block; }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 26px; border-radius:10px; font-weight:700; font-size:14.5px; transition:.2s; width:100%; }
+  .btn-gold{ background:var(--brown-light); color:var(--text); border:1.5px solid var(--gold); }
+  .btn-gold:hover{ background:var(--brown); }
+  .btn-gold:disabled{ opacity:.5; cursor:not-allowed; }
+
+  .top-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); padding:16px 20px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:50; }
+  .top-header a.back{ font-size:20px; }
+  .top-header h1{ font-size:19px; }
+
+  main{ max-width:640px; margin:0 auto; padding:20px 18px 40px; }
+
+  .empty{ text-align:center; padding:70px 20px; color:var(--text-soft); }
+  .empty .ic{ font-size:50px; margin-bottom:16px; }
+  .empty a{ display:inline-block; margin-top:18px; color:var(--gold-light); font-weight:700; border-bottom:1.5px solid var(--gold); padding-bottom:2px; }
+
+  .cart-item{ display:flex; gap:14px; background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; padding:14px; margin-bottom:12px; }
+  .cart-item .thumb{ width:64px; height:64px; border-radius:10px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; overflow:hidden; }
+  .cart-item .thumb img{ width:100%; height:100%; object-fit:cover; }
+  .cart-item .info{ flex:1; min-width:0; }
+  .cart-item .name{ font-weight:700; font-size:14.5px; margin-bottom:2px; }
+  .cart-item .brand{ font-size:12px; color:var(--text-soft); margin-bottom:8px; }
+  .cart-item .row-bottom{ display:flex; align-items:center; justify-content:space-between; }
+  .qty-stepper{ display:flex; align-items:center; gap:10px; background:var(--bg-2); border:1px solid var(--line); border-radius:999px; padding:4px 10px; }
+  .qty-stepper button{ background:none; color:var(--gold-light); font-size:16px; font-weight:800; width:20px; }
+  .qty-stepper span{ font-size:13px; font-weight:700; min-width:16px; text-align:center; }
+  .item-price{ font-weight:700; color:var(--gold-light); font-size:14px; }
+  .remove-btn{ color:var(--text-soft); font-size:12px; text-decoration:underline; margin-top:8px; display:inline-block; }
+
+  .summary{ background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; padding:20px; margin-top:24px; }
+  .summary-row{ display:flex; justify-content:space-between; font-size:13.5px; color:var(--text-soft); padding:6px 0; }
+  .summary-row.total{ color:var(--text); font-weight:700; font-size:16px; border-top:1px solid var(--line); margin-top:8px; padding-top:14px; }
+
+  .checkout-form{ margin-top:20px; display:none; }
+  .checkout-form.open{ display:block; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:6px; }
+  .field input, .field select{ width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg-2); color:var(--text); font-size:14px; font-family:inherit; }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--gold); }
+  .pay-options{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+  .pay-opt{ border:1.5px solid var(--line); border-radius:10px; padding:12px 10px; text-align:center; cursor:pointer; font-size:12.5px; font-weight:600; color:var(--text-soft); }
+  .pay-opt.selected{ border-color:var(--gold); color:var(--text); background:var(--bg-2); }
+
+  .confirmation{ display:none; text-align:center; padding:50px 20px; }
+  .confirmation.open{ display:block; }
+  .confirmation .ic{ font-size:56px; margin-bottom:16px; }
+  .confirmation h2{ font-size:22px; margin-bottom:8px; }
+  .confirmation p{ color:var(--text-soft); font-size:14px; margin-bottom:20px; }
+  .order-number{ display:inline-block; background:var(--surface); border:1.5px dashed var(--gold); border-radius:10px; padding:10px 20px; font-weight:800; color:var(--gold-light); letter-spacing:.05em; margin-bottom:20px; }
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <a href="index.html" class="back">←</a>
+  <h1>O meu carrinho</h1>
+</header>
+
+<main>
+  <div id="cartView"></div>
+
+  <div class="checkout-form" id="checkoutForm">
+    <h2 style="font-size:18px; margin:24px 0 16px;">Dados de entrega</h2>
+    <div class="field"><label>Nome completo</label><input type="text" id="ckName" placeholder="O teu nome"></div>
+    <div class="field"><label>Telefone</label><input type="text" id="ckPhone" placeholder="9XX XXX XXX"></div>
+    <div class="field"><label>Província / Município</label><input type="text" id="ckCity" placeholder="Ex: Luanda, Talatona"></div>
+    <div class="field"><label>Morada / Referência</label><input type="text" id="ckAddress" placeholder="Rua, bairro, ponto de referência"></div>
+
+    <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Método de pagamento</label>
+    <div class="pay-options">
+      <div class="pay-opt selected" data-pay="multicaixa" onclick="selecionarPagamento('multicaixa')">Multicaixa Express</div>
+      <div class="pay-opt" data-pay="transferencia" onclick="selecionarPagamento('transferencia')">Transferência bancária</div>
+    </div>
+
+    <button class="btn btn-gold" onclick="finalizarPedido()">Finalizar pedido</button>
+  </div>
+
+  <div class="confirmation" id="confirmationView">
+    <div class="ic">✅</div>
+    <h2>Pedido recebido!</h2>
+    <p>Vamos entrar em contacto para confirmar o pagamento e a entrega.</p>
+    <div class="order-number" id="orderNumberText">#RD0000</div>
+    <a href="index.html" class="btn btn-gold" style="display:inline-flex; width:auto; padding:13px 26px;">Voltar à loja</a>
+  </div>
+</main>
+
+<script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
+  let supabase = null;
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+  let metodoPagamento = 'multicaixa';
+  function selecionarPagamento(m){
+    metodoPagamento = m;
+    document.querySelectorAll('.pay-opt').forEach(el=> el.classList.toggle('selected', el.dataset.pay===m));
+  }
+
+  const DELIVERY_FEE = 2000;
+
+  function render(){
+    const cart = RD.getCart();
+    const view = document.getElementById('cartView');
+    const checkoutForm = document.getElementById('checkoutForm');
+
+    if(cart.length === 0){
+      view.innerHTML = `
+        <div class="empty">
+          <div class="ic">🛒</div>
+          <h2>O teu carrinho está vazio</h2>
+          <p>Adiciona produtos para veres aqui.</p>
+          <a href="index.html">← Voltar à loja</a>
+        </div>`;
+      checkoutForm.classList.remove('open');
+      return;
+    }
+
+    const subtotal = RD.cartTotal();
+    const total = subtotal + DELIVERY_FEE;
+
+    view.innerHTML = `
+      ${cart.map(item => `
+        <div class="cart-item">
+          <div class="thumb">${item.image ? `<img src="${item.image}">` : (item.emoji || '📦')}</div>
+          <div class="info">
+            <div class="name">${item.name}</div>
+            <div class="brand">${item.brand || ''}</div>
+            <div class="row-bottom">
+              <div class="qty-stepper">
+                <button onclick="mudarQtd('${item.id}', ${item.qty - 1})">−</button>
+                <span>${item.qty}</span>
+                <button onclick="mudarQtd('${item.id}', ${item.qty + 1})">+</button>
+              </div>
+              <span class="item-price">${RD.formatKz(item.price * item.qty)}</span>
+            </div>
+            <a class="remove-btn" onclick="removerItem('${item.id}')">Remover</a>
+          </div>
+        </div>
+      `).join('')}
+
+      <div class="summary">
+        <div class="summary-row"><span>Subtotal</span><span>${RD.formatKz(subtotal)}</span></div>
+        <div class="summary-row"><span>Entrega</span><span>${RD.formatKz(DELIVERY_FEE)}</span></div>
+        <div class="summary-row total"><span>Total</span><span>${RD.formatKz(total)}</span></div>
+      </div>
+
+      <button class="btn btn-gold" style="margin-top:18px;" onclick="mostrarCheckout()">Continuar para entrega →</button>
+    `;
+  }
+
+  function mudarQtd(id, novaQtd){
+    if(novaQtd <= 0){ RD.removeFromCart(id); } else { RD.setQty(id, novaQtd); }
+    render();
+  }
+  function removerItem(id){ RD.removeFromCart(id); render(); RD.showToast('Produto removido'); }
+  function mostrarCheckout(){
+    document.getElementById('checkoutForm').classList.add('open');
+    document.getElementById('checkoutForm').scrollIntoView({ behavior:'smooth' });
+  }
+
+  async function finalizarPedido(){
+    const nome = document.getElementById('ckName').value.trim();
+    const telefone = document.getElementById('ckPhone').value.trim();
+    const cidade = document.getElementById('ckCity').value.trim();
+    const morada = document.getElementById('ckAddress').value.trim();
+
+    if(!nome || !telefone || !cidade){
+      RD.showToast('Preenche nome, telefone e cidade');
+      return;
+    }
+
+    const cart = RD.getCart();
+    const total = RD.cartTotal() + DELIVERY_FEE;
+    let orderNumber = 'RD' + Math.floor(1000 + Math.random()*9000);
+
+    // Se o Supabase estiver ligado, tenta guardar o pedido a sério
+    if(supabase){
+      try{
+        const { data: customer } = await supabase.from('customers').insert({
+          full_name: nome, phone: telefone, address: `${cidade} — ${morada}`
+        }).select().single();
+
+        const { data: order } = await supabase.from('orders').insert({
+          customer_id: customer ? customer.id : null, status:'novo', total, delivery_fee: DELIVERY_FEE
+        }).select().single();
+
+        if(order){
+          orderNumber = 'RD' + order.order_number;
+          const idsDemo = ['iphone15pro','perfume-elan','relogio-aurora','airpods-pro','camisa-slim'];
+          const items = cart
+            .filter(i => !idsDemo.includes(String(i.id)))
+            .map(i => ({ order_id: order.id, product_id: i.id, quantity: i.qty, unit_price: i.price }));
+          if(items.length) await supabase.from('order_items').insert(items);
+        }
+      }catch(e){ console.log('Pedido guardado apenas localmente (Supabase indisponível ou tabela incompleta).', e); }
+    }
+
+    document.getElementById('orderNumberText').textContent = '#' + orderNumber;
+    document.getElementById('cartView').innerHTML = '';
+    document.getElementById('checkoutForm').classList.remove('open');
+    document.getElementById('confirmationView').classList.add('open');
+    RD.clearCart();
+  }
+
+  render();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A minha conta — Roque Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+<script src="../assets/supabase.js"></script>
+<script src="../assets/store-common.js"></script>
+<style>
+  :root{
+    --bg:#0A0603; --bg-2:#160D07; --surface:#20140A;
+    --brown:#4A2A18; --brown-light:#6B3D22; --brown-deep:#1B0F07;
+    --gold:#C08A3E; --gold-light:#E0B173;
+    --text:#F4ECE1; --text-soft:#B9A48C; --line:#3A2A1A;
+    --success:#2E9E5B; --danger:#C0553B;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{ font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); padding-bottom:calc(70px + env(safe-area-inset-bottom)); }
+  h1,h2,h3{ font-family:'Fraunces',serif; color:var(--text); font-weight:600; }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:inherit; cursor:pointer; border:none; }
+  img{ max-width:100%; display:block; }
+
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 26px; border-radius:10px; font-weight:700; font-size:14.5px; transition:.2s; width:100%; }
+  .btn-gold{ background:var(--brown-light); color:var(--text); border:1.5px solid var(--gold); }
+  .btn-gold:hover{ background:var(--brown); }
+
+  .top-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); padding:16px 20px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:50; }
+  .top-header a.back{ font-size:20px; }
+  .top-header h1{ font-size:19px; }
+
+  main{ max-width:640px; margin:0 auto; padding:20px 18px 40px; }
+
+  /* ---------- Login / Registo ---------- */
+  .auth-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:18px; padding:30px 26px; margin-top:20px; }
+  .auth-tabs{ display:flex; gap:8px; margin-bottom:22px; background:var(--bg-2); border-radius:10px; padding:4px; }
+  .auth-tab{ flex:1; text-align:center; padding:9px; border-radius:8px; font-size:13.5px; font-weight:700; color:var(--text-soft); }
+  .auth-tab.active{ background:var(--brown-light); color:var(--text); }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:6px; }
+  .field input{ width:100%; padding:12px 14px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg-2); color:var(--text); font-size:14px; font-family:inherit; }
+  .field input:focus{ outline:none; border-color:var(--gold); }
+  .auth-msg{ font-size:12.5px; text-align:center; margin-top:14px; padding:10px; border-radius:8px; display:none; }
+  .auth-msg.error{ background:rgba(192,85,59,0.15); color:#E08668; display:block; }
+  .auth-msg.ok{ background:rgba(46,158,91,0.15); color:#6FCB94; display:block; }
+  .auth-panel{ display:none; }
+  .auth-panel.active{ display:block; }
+
+  /* ---------- Perfil (autenticado) ---------- */
+  .profile-tabs{ display:flex; gap:10px; overflow-x:auto; margin-bottom:24px; padding-bottom:4px; }
+  .p-tab{ flex-shrink:0; min-width:84px; text-align:center; padding:14px 12px; border-radius:14px; border:1.5px solid var(--line); background:var(--surface); color:var(--text-soft); font-size:12.5px; font-weight:600; cursor:pointer; }
+  .p-tab .ic{ font-size:20px; display:block; margin-bottom:6px; }
+  .p-tab.active{ border-color:var(--gold); background:var(--brown-light); color:var(--text); }
+  .p-tab.logout{ color:var(--danger); }
+
+  .p-panel{ display:none; }
+  .p-panel.active{ display:block; }
+
+  .data-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; padding:24px 22px; }
+  .btn-gold[disabled]{ opacity:.6; cursor:not-allowed; }
+
+  .order-item{ background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .order-item .num{ font-weight:700; font-size:14px; }
+  .order-item .meta{ font-size:12px; color:var(--text-soft); margin-top:2px; }
+  .status-pill{ font-size:10.5px; font-weight:700; padding:3px 10px; border-radius:999px; background:var(--bg-2); color:var(--gold-light); display:inline-block; margin-top:8px; }
+
+  .empty{ text-align:center; padding:50px 20px; color:var(--text-soft); }
+  .empty .ic{ font-size:44px; margin-bottom:14px; }
+
+  .fav-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  .prod-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; overflow:hidden; }
+  .prod-img{ height:100px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:34px; }
+  .prod-body{ padding:10px 12px 12px; }
+  .prod-name{ font-size:12.5px; font-weight:700; }
+  .prod-price{ font-size:13px; color:var(--gold-light); font-weight:700; margin-top:4px; }
+</style>
+</head>
+<body>
+
+<header class="top-header">
+  <a href="index.html" class="back">←</a>
+  <h1>A minha conta</h1>
+</header>
+
+<main>
+
+  <!-- ================= NÃO AUTENTICADO ================= -->
+  <div id="authView">
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <div class="auth-tab active" data-tab="login" onclick="mudarAbaAuth('login')">Entrar</div>
+        <div class="auth-tab" data-tab="signup" onclick="mudarAbaAuth('signup')">Criar conta</div>
+      </div>
+
+      <div class="auth-panel active" id="loginPanel">
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="oteuemail@exemplo.com"></div>
+        <div class="field"><label>Palavra-passe</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
+        <button class="btn btn-gold" onclick="fazerLogin()">Entrar</button>
+        <div class="auth-msg" id="loginMsg"></div>
+      </div>
+
+      <div class="auth-panel" id="signupPanel">
+        <div class="field"><label>Nome completo</label><input type="text" id="suName" placeholder="O teu nome"></div>
+        <div class="field"><label>Email</label><input type="email" id="suEmail" placeholder="oteuemail@exemplo.com"></div>
+        <div class="field"><label>Palavra-passe</label><input type="password" id="suPassword" placeholder="Mínimo 6 caracteres"></div>
+        <button class="btn btn-gold" onclick="fazerRegisto()">Criar conta</button>
+        <div class="auth-msg" id="signupMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= AUTENTICADO ================= -->
+  <div id="profileView" style="display:none;">
+    <div class="profile-tabs">
+      <div class="p-tab active" data-tab="perfil" onclick="mudarAbaPerfil('perfil')"><span class="ic">👤</span>Perfil</div>
+      <div class="p-tab" data-tab="encomendas" onclick="mudarAbaPerfil('encomendas')"><span class="ic">📦</span>Encomendas</div>
+      <div class="p-tab" data-tab="favoritos" onclick="mudarAbaPerfil('favoritos')"><span class="ic">❤️</span>Favoritos</div>
+      <div class="p-tab logout" onclick="terminarSessao()"><span class="ic">🚪</span>Sair</div>
+    </div>
+
+    <div class="p-panel active" id="panel-perfil">
+      <h2 style="font-size:19px; margin-bottom:16px;">Os meus dados</h2>
+      <div class="data-card">
+        <div class="field"><label>Nome</label><input type="text" id="pfName"></div>
+        <div class="field"><label>E-mail</label><input type="email" id="pfEmail" disabled></div>
+        <div class="field"><label>Telefone</label><input type="text" id="pfPhone" placeholder="9XX XXX XXX"></div>
+        <div class="field"><label>Morada</label><input type="text" id="pfAddress" placeholder="Rua, bairro, município"></div>
+        <button class="btn btn-gold" onclick="guardarPerfil()">Guardar alterações</button>
+        <div class="auth-msg" id="profileMsg"></div>
+      </div>
+    </div>
+
+    <div class="p-panel" id="panel-encomendas">
+      <h2 style="font-size:19px; margin-bottom:16px;">As minhas encomendas</h2>
+      <div id="ordersList"><div class="empty"><div class="ic">📦</div>A carregar...</div></div>
+    </div>
+
+    <div class="p-panel" id="panel-favoritos">
+      <h2 style="font-size:19px; margin-bottom:16px;">Os meus favoritos</h2>
+      <div id="favsList"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
+  let supabase = null;
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+  let currentCustomer = null;
+
+  function mudarAbaAuth(tab){
+    document.querySelectorAll('.auth-tab').forEach(t=> t.classList.toggle('active', t.dataset.tab===tab));
+    document.getElementById('loginPanel').classList.toggle('active', tab==='login');
+    document.getElementById('signupPanel').classList.toggle('active', tab==='signup');
+  }
+
+  function mudarAbaPerfil(tab){
+    document.querySelectorAll('.p-tab[data-tab]').forEach(t=> t.classList.toggle('active', t.dataset.tab===tab));
+    document.querySelectorAll('.p-panel').forEach(p=> p.classList.remove('active'));
+    document.getElementById('panel-'+tab).classList.add('active');
+    if(tab === 'encomendas') carregarEncomendas();
+    if(tab === 'favoritos') carregarFavoritos();
+  }
+
+  async function fazerLogin(){
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const msg = document.getElementById('loginMsg');
+    if(!supabase){ msg.className='auth-msg error'; msg.textContent='Supabase não está ligado.'; return; }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error){ msg.className='auth-msg error'; msg.textContent='Email ou palavra-passe incorretos.'; return; }
+    msg.className='auth-msg ok'; msg.textContent='Sessão iniciada!';
+    setTimeout(verificarSessao, 400);
+  }
+
+  async function fazerRegisto(){
+    const nome = document.getElementById('suName').value.trim();
+    const email = document.getElementById('suEmail').value.trim();
+    const password = document.getElementById('suPassword').value;
+    const msg = document.getElementById('signupMsg');
+    if(!supabase){ msg.className='auth-msg error'; msg.textContent='Supabase não está ligado.'; return; }
+    if(!nome || !email || password.length < 6){ msg.className='auth-msg error'; msg.textContent='Preenche todos os campos (palavra-passe com 6+ caracteres).'; return; }
+
+    // Nota: não enviamos "role" nos metadados — assim o trigger do Supabase
+    // sabe que esta conta é de um CLIENTE, e não cria uma linha em "profiles"
+    // (essa tabela é só para Admin/Gestor do painel).
+    const { data, error } = await supabase.auth.signUp({
+      email, password, options:{ data:{ full_name: nome } }
+    });
+    if(error){ msg.className='auth-msg error'; msg.textContent = error.message.includes('already') ? 'Este email já tem conta.' : 'Erro: ' + error.message; return; }
+
+    if(data.user){
+      await supabase.from('customers').insert({
+        auth_user_id: data.user.id, full_name: nome, email: email
+      });
+    }
+
+    msg.className='auth-msg ok';
+    msg.textContent = data.session ? 'Conta criada! A entrar...' : 'Conta criada! Verifica o teu email para confirmar.';
+    if(data.session) setTimeout(verificarSessao, 500);
+  }
+
+  async function terminarSessao(){
+    if(supabase) await supabase.auth.signOut();
+    currentCustomer = null;
+    verificarSessao();
+  }
+
+  async function verificarSessao(){
+    if(!supabase){ mostrarAuth(); return; }
+    const { data:{ session } } = await supabase.auth.getSession();
+    if(!session){ mostrarAuth(); return; }
+
+    let { data: customer } = await supabase.from('customers').select('*').eq('auth_user_id', session.user.id).single();
+    if(!customer){
+      const { data: novo } = await supabase.from('customers').insert({
+        auth_user_id: session.user.id, full_name: session.user.email.split('@')[0], email: session.user.email
+      }).select().single();
+      customer = novo;
+    }
+    currentCustomer = customer;
+    mostrarPerfil();
+  }
+
+  function mostrarAuth(){
+    document.getElementById('authView').style.display = 'block';
+    document.getElementById('profileView').style.display = 'none';
+  }
+
+  function mostrarPerfil(){
+    document.getElementById('authView').style.display = 'none';
+    document.getElementById('profileView').style.display = 'block';
+    document.getElementById('pfName').value = currentCustomer?.full_name || '';
+    document.getElementById('pfEmail').value = currentCustomer?.email || '';
+    document.getElementById('pfPhone').value = currentCustomer?.phone || '';
+    document.getElementById('pfAddress').value = currentCustomer?.address || '';
+  }
+
+  async function guardarPerfil(){
+    const msg = document.getElementById('profileMsg');
+    if(!currentCustomer){ return; }
+    const updates = {
+      full_name: document.getElementById('pfName').value.trim(),
+      phone: document.getElementById('pfPhone').value.trim(),
+      address: document.getElementById('pfAddress').value.trim(),
+    };
+    const { error } = await supabase.from('customers').update(updates).eq('id', currentCustomer.id);
+    if(error){ msg.className='auth-msg error'; msg.textContent='Erro ao guardar: ' + error.message; return; }
+    Object.assign(currentCustomer, updates);
+    msg.className='auth-msg ok'; msg.textContent='Dados guardados com sucesso!';
+    setTimeout(()=> msg.style.display='none', 2500);
+  }
+
+  async function carregarEncomendas(){
+    const list = document.getElementById('ordersList');
+    if(!currentCustomer){ list.innerHTML = '<div class="empty"><div class="ic">📦</div>Ainda não tens encomendas</div>'; return; }
+    const { data, error } = await supabase.from('orders').select('*').eq('customer_id', currentCustomer.id).order('created_at', { ascending:false });
+    if(error || !data || data.length === 0){
+      list.innerHTML = '<div class="empty"><div class="ic">📦</div>Ainda não tens encomendas</div>';
+      return;
+    }
+    list.innerHTML = data.map(o => `
+      <div class="order-item">
+        <div class="num">Pedido #RD${o.order_number}</div>
+        <div class="meta">${new Date(o.created_at).toLocaleDateString('pt-PT')} · ${RD.formatKz(o.total)}</div>
+        <span class="status-pill">${o.status}</span>
+      </div>
+    `).join('');
+  }
+
+  function carregarFavoritos(){
+    const favs = RD.getFavs();
+    const list = document.getElementById('favsList');
+    if(favs.length === 0){
+      list.innerHTML = '<div class="empty"><div class="ic">🤍</div>Ainda não tens favoritos</div>';
+      return;
+    }
+    list.innerHTML = `<div class="fav-grid">${favs.map(p => `
+      <div class="prod-card">
+        <div class="prod-img">${p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">` : (p.emoji||'📦')}</div>
+        <div class="prod-body"><div class="prod-name">${p.name}</div><div class="prod-price">${RD.formatKz(p.price)}</div></div>
+      </div>
+    `).join('')}</div>`;
+  }
+
+  verificarSessao();
+</script>
+
+</body>
+</html>
