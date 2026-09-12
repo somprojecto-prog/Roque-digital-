@@ -103,6 +103,40 @@ const RD = {
     }).filter(s=>s.score>0).sort((a,b)=>b.score-a.score);
 
     return { exact:[], suggestions: scored.slice(0,6).map(s=>s.p) };
+  },
+
+  // ---------- Conteúdo do site (aplicado pelo painel de gestão) ----------
+  // Lê a tabela site_settings e atualiza nome, slogan, textos de destaque,
+  // rodapé, contactos e links de redes sociais em qualquer página que tenha
+  // estas classes no HTML. Chamar depois de criar o cliente `supabase`.
+  async applySiteSettings(supabaseClient){
+    if(!supabaseClient) return;
+    try{
+      const { data } = await supabaseClient.from('site_settings').select('*').eq('id',1).single();
+      if(!data) return;
+
+      if(data.nome_site) document.querySelectorAll('.js-site-name').forEach(el=> el.textContent = data.nome_site);
+      if(data.slogan) document.querySelectorAll('.js-site-slogan').forEach(el=> el.textContent = data.slogan);
+      if(data.hero_titulo) document.querySelectorAll('.js-hero-titulo').forEach(el=> el.textContent = data.hero_titulo);
+      if(data.hero_descricao) document.querySelectorAll('.js-hero-descricao').forEach(el=> el.textContent = data.hero_descricao);
+
+      if(data.logo_url) document.querySelectorAll('.js-site-logo').forEach(el=> el.src = data.logo_url);
+      if(data.hero_url) document.querySelectorAll('.js-hero-image').forEach(el=> el.src = data.hero_url);
+
+      const footerCopy = document.getElementById('footer-copy');
+      if(footerCopy){
+        const nome = data.nome_site || 'Roque Digital';
+        const texto = data.rodape_texto || 'Todos os direitos reservados.';
+        footerCopy.textContent = `© ${new Date().getFullYear()} ${nome} — ${texto}`;
+      }
+
+      if(data.contacto_whatsapp){
+        const numero = data.contacto_whatsapp.replace(/\D/g,'');
+        document.querySelectorAll('.js-whatsapp-float, .js-social-whatsapp').forEach(el=> el.href = `https://wa.me/${numero}`);
+      }
+      if(data.redes_instagram) document.querySelectorAll('.js-social-instagram').forEach(el=> el.href = data.redes_instagram);
+      if(data.redes_facebook) document.querySelectorAll('.js-social-facebook').forEach(el=> el.href = data.redes_facebook);
+    }catch(e){ console.warn('Não foi possível aplicar o conteúdo do site.', e); }
   }
 };
 
