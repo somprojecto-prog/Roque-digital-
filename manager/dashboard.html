@@ -6,7 +6,7 @@
 <title>Roque Digital — Painel de Gestão</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+<script src="../assets/supabase.js"></script>
 <style>
   .mgr-shell{ display:flex; min-height:100vh; }
   .mgr-sidebar{ width:236px; background:var(--brown-900); color:#D9C7B4; flex-shrink:0; display:flex; flex-direction:column; padding:20px 14px; }
@@ -203,37 +203,16 @@
   const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
 
-  function carregarScript(src){
-    return new Promise((resolve, reject)=>{
-      const s = document.createElement('script');
-      s.src = src;
-      s.crossOrigin = 'anonymous';
-      s.onload = resolve;
-      s.onerror = ()=> reject(new Error('Falhou carregar: ' + src));
-      document.head.appendChild(s);
-    });
-  }
-
+  // A biblioteca do Supabase vem de ../assets/supabase.js (ficheiro local)
+  // em vez de um CDN externo — sem risco de bloqueio pela rede/operadora.
   let supabase = null;
-
-  async function ligarSupabase(){
-    try{
-      await carregarScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2');
-      if(!window.supabase) throw new Error('sem window.supabase');
-    } catch(e1){
-      try{
-        await carregarScript('https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js');
-        if(!window.supabase) throw new Error('sem window.supabase');
-      } catch(e2){
-        alert('Não foi possível carregar a biblioteca do Supabase (rede/bloqueador). O painel vai ficar em modo demonstração.');
-        return;
-      }
-    }
+  try{
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } catch(e1){
+    console.error('Não foi possível iniciar o Supabase:', e1);
   }
 
   async function verificarSessao(){
-    await ligarSupabase();
     if(!supabase){
       // Modo demonstração sem Supabase ligado
       document.getElementById('gate').style.display='none';
