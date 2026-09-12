@@ -10,7 +10,7 @@
 <script src="../assets/supabase.js"></script>
 <style>
   .mgr-shell{ display:flex; min-height:100vh; }
-  .mgr-sidebar{ width:236px; background:var(--brown-900); color:#D9C7B4; flex-shrink:0; display:flex; flex-direction:column; padding:20px 14px; }
+  .mgr-sidebar{ width:236px; background:var(--brown-900); color:#D9C7B4; flex-shrink:0; display:flex; flex-direction:column; padding:20px 14px; position:sticky; top:0; height:100vh; overflow-y:auto; }
   .mgr-brand{ display:flex; align-items:center; gap:10px; padding:6px 8px 22px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:14px; }
   .mgr-brand .logo-circle{ width:38px; height:38px; border-radius:50%; overflow:hidden; border:2px solid var(--gold); flex-shrink:0; }
   .mgr-brand .logo-circle img{ width:100%; height:100%; object-fit:cover; }
@@ -18,12 +18,12 @@
   .mgr-brand-text span{ display:block; font-family:'Inter',sans-serif; font-size:9.5px; color:var(--gold-light); letter-spacing:0.1em; font-weight:700; margin-top:2px; }
   .mgr-nav-group{ margin-bottom:14px; }
   .mgr-nav-label{ font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; color:#8C7A68; padding:8px 10px 6px; font-weight:700; }
-  .mgr-nav a{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; font-size:13.5px; font-weight:500; color:#D9C7B4; margin-bottom:2px; transition:.15s; }
+  .mgr-nav a{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:9px; font-size:13.5px; font-weight:500; color:#D9C7B4; margin-bottom:2px; transition:.15s; cursor:pointer; }
   .mgr-nav a:hover{ background:rgba(255,255,255,0.06); color:var(--cream); }
   .mgr-nav a.active{ background:var(--gold); color:var(--brown-900); font-weight:700; }
   .mgr-nav a .ic{ width:18px; text-align:center; }
   .mgr-signout{ margin-top:auto; padding:12px 10px; border-top:1px solid rgba(255,255,255,0.08); font-size:12.5px; color:#B5A48C; }
-  .mgr-signout button{ background:transparent; color:#E8C88F; font-weight:700; font-size:12.5px; }
+  .mgr-signout button{ background:transparent; color:#E8C88F; font-weight:700; font-size:12.5px; cursor:pointer; }
 
   .mgr-main{ flex:1; min-width:0; background:var(--cream); }
   .mgr-topbar{ background:var(--white); border-bottom:1px solid var(--line); padding:14px 30px; display:flex; align-items:center; gap:20px; }
@@ -42,32 +42,36 @@
   .kpi-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:18px 20px; }
   .kpi-label{ font-size:12.5px; color:var(--text-soft); font-weight:600; margin-bottom:8px; }
   .kpi-value{ font-size:24px; font-weight:700; color:var(--brown-900); font-family:'Fraunces',serif; }
-  .kpi-delta{ font-size:12px; font-weight:600; margin-top:6px; }
-  .kpi-delta.up{ color:var(--success); }
-  .kpi-delta.down{ color:var(--danger); }
-
-  .alert-box{ background:#FBF1E0; border:1px solid var(--gold-light); border-radius:14px; padding:16px 20px; margin-bottom:24px; }
-  .alert-box .title{ font-weight:700; font-size:13.5px; color:var(--brown-700); margin-bottom:8px; }
-  .alert-box ul{ list-style:none; font-size:13px; color:var(--text); line-height:1.9; }
-  .alert-box li::before{ content:'•'; color:var(--gold); margin-right:8px; font-weight:900; }
+  .kpi-delta{ font-size:12px; font-weight:600; margin-top:6px; color:var(--text-soft); }
 
   .mgr-grid-2{ display:grid; grid-template-columns:1.4fr 1fr; gap:18px; margin-bottom:24px; }
   .panel{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:20px 22px; }
   .panel h3{ font-size:15px; margin-bottom:16px; }
 
   table.mgr-table{ width:100%; border-collapse:collapse; font-size:13px; }
-  table.mgr-table th{ text-align:left; color:var(--text-soft); font-weight:600; font-size:12px; padding:8px 10px; border-bottom:1.5px solid var(--line); }
-  table.mgr-table td{ padding:11px 10px; border-bottom:1px solid var(--line); }
+  table.mgr-table th{ text-align:left; color:var(--text-soft); font-weight:600; font-size:12px; padding:8px 10px; border-bottom:1.5px solid var(--line); white-space:nowrap; }
+  table.mgr-table td{ padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
   table.mgr-table tr:last-child td{ border-bottom:none; }
-  .status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; display:inline-block; }
-  .status-pill.paid{ background:#E4F3E9; color:var(--success); }
-  .status-pill.prep{ background:#FBF1E0; color:var(--brown-700); }
-  .status-pill.sent{ background:#E6EEFB; color:#2b5fc2; }
+  .status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; display:inline-block; white-space:nowrap; }
+  .status-pill.novo{ background:#E6EEFB; color:#2b5fc2; }
+  .status-pill.pago{ background:#E4F3E9; color:var(--success); }
+  .status-pill.preparando{ background:#FBF1E0; color:var(--brown-700); }
+  .status-pill.enviado{ background:#EFE6FB; color:#7b3fc2; }
+  .status-pill.entregue{ background:#E4F3E9; color:var(--success); }
+  .status-pill.cancelado{ background:#FBE6E2; color:var(--danger); }
+  .status-pill.ativo, .status-pill.normal{ background:#E4F3E9; color:var(--success); }
+  .status-pill.inativo, .status-pill.critico{ background:#FBE6E2; color:var(--danger); }
 
-  .mgr-toolbar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
-  .chip{ font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px; background:var(--cream-2); color:var(--text-soft); }
+  .mgr-toolbar{ display:flex; align-items:center; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+  .chip{ font-size:12.5px; font-weight:600; padding:7px 14px; border-radius:999px; background:var(--cream-2); color:var(--text-soft); cursor:pointer; border:none; }
   .chip.active{ background:var(--brown-900); color:var(--cream); }
   .btn-add{ margin-left:auto; }
+  .mgr-toolbar input[type="text"], .mgr-toolbar select, .mgr-toolbar input[type="date"]{
+    padding:8px 12px; border:1.5px solid var(--line); border-radius:9px; font-size:12.5px; font-family:inherit; background:var(--white);
+  }
+  .thumb{ width:38px; height:38px; border-radius:8px; object-fit:cover; background:var(--cream-2); flex-shrink:0; display:inline-block; vertical-align:middle; margin-right:8px; }
+  .row-actions button{ font-size:12px; font-weight:700; color:var(--brown-700); margin-right:10px; background:none; border:none; cursor:pointer; }
+  .row-actions button.danger{ color:var(--danger); }
 
   .field-row{ display:grid; grid-template-columns:180px 1fr; gap:16px; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); }
   .field-row label{ font-size:13px; font-weight:600; color:var(--text-soft); }
@@ -77,6 +81,37 @@
   .mgr-panel.active{ display:block; }
 
   .gate{ position:fixed; inset:0; background:var(--brown-900); color:var(--cream); display:flex; align-items:center; justify-content:center; z-index:999; font-family:'Inter',sans-serif; font-size:14px; }
+
+  /* ---------- Modal ---------- */
+  .mdl-backdrop{ position:fixed; inset:0; background:rgba(20,12,7,0.55); z-index:400; opacity:0; pointer-events:none; transition:.2s; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .mdl-backdrop.open{ opacity:1; pointer-events:auto; }
+  .mdl-box{ background:var(--white); border-radius:18px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; }
+  .mdl-head{ display:flex; align-items:center; justify-content:space-between; padding:18px 22px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--white); }
+  .mdl-head h3{ font-size:16px; }
+  .mdl-close{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; cursor:pointer; background:none; font-size:16px; color:var(--brown-900); }
+  .mdl-body{ padding:20px 22px 26px; }
+  .mdl-body .field{ margin-bottom:14px; }
+  .mdl-body .field label{ display:block; font-size:12px; font-weight:700; color:var(--text-soft); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em; }
+  .mdl-body .field input, .mdl-body .field select, .mdl-body .field textarea{ width:100%; padding:10px 13px; border:1.5px solid var(--line); border-radius:9px; font-size:13.5px; font-family:inherit; }
+  .mdl-row{ display:flex; gap:12px; }
+  .mdl-row .field{ flex:1; }
+  .image-upload-box{ border:1.5px dashed var(--line); border-radius:10px; height:110px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; background:var(--cream); }
+  .image-upload-box img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .image-upload-box span{ font-size:12.5px; color:var(--text-soft); padding:0 10px; text-align:center; }
+  .upload-status{ font-size:11.5px; margin-top:5px; color:var(--text-soft); }
+  .toggle-row{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; margin-bottom:14px; }
+
+  .toast{ position:fixed; bottom:26px; left:50%; transform:translate(-50%,20px); background:var(--brown-900); color:var(--cream); font-weight:600; font-size:13.5px; padding:12px 22px; border-radius:999px; box-shadow:0 12px 26px rgba(0,0,0,.35); opacity:0; transition:.25s; pointer-events:none; z-index:500; }
+  .toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  .empty-state{ color:var(--text-soft); font-size:13px; padding:20px 0; text-align:center; }
+
+  @media (max-width: 980px){
+    .mgr-sidebar{ display:none; }
+    .kpi-grid{ grid-template-columns:1fr 1fr; }
+    .mgr-grid-2{ grid-template-columns:1fr; }
+    .mdl-row{ flex-direction:column; }
+  }
 </style>
 </head>
 <body>
@@ -90,24 +125,25 @@
       <div class="mgr-brand-text">Roque Digital<span>PAINEL DE GESTÃO</span></div>
     </div>
     <nav class="mgr-nav">
-      <div class="mgr-nav-group"><a href="#" class="active" onclick="return mgrTab(event,'dash')"><span class="ic">📊</span> Dashboard</a></div>
+      <div class="mgr-nav-group"><a class="active" data-tab="dash" onclick="return mgrTab(event,'dash')"><span class="ic">📊</span> Dashboard</a></div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Catálogo</div>
-        <a href="#" onclick="return mgrTab(event,'produtos')"><span class="ic">🛍</span> Produtos</a>
-        <a href="#" onclick="return mgrTab(event,'stock')"><span class="ic">📦</span> Inventário</a>
+        <a data-tab="produtos" onclick="return mgrTab(event,'produtos')"><span class="ic">🛍</span> Produtos</a>
+        <a data-tab="stock" onclick="return mgrTab(event,'stock')"><span class="ic">📦</span> Inventário</a>
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Vendas</div>
-        <a href="#" onclick="return mgrTab(event,'encomendas')"><span class="ic">📦</span> Encomendas</a>
+        <a data-tab="encomendas" onclick="return mgrTab(event,'encomendas')"><span class="ic">🧾</span> Encomendas</a>
+        <a data-tab="clientes" onclick="return mgrTab(event,'clientes')"><span class="ic">👤</span> Clientes</a>
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Loja</div>
-        <a href="#" onclick="return mgrTab(event,'conteudo')"><span class="ic">📝</span> Conteúdo do site</a>
-        <a href="#" onclick="return mgrTab(event,'imagens')"><span class="ic">🖼</span> Imagens</a>
+        <a data-tab="conteudo" onclick="return mgrTab(event,'conteudo')"><span class="ic">📝</span> Conteúdo do site</a>
+        <a data-tab="imagens" onclick="return mgrTab(event,'imagens')"><span class="ic">🖼</span> Imagens</a>
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Sistema</div>
-        <a href="#" onclick="return mgrTab(event,'equipa')"><span class="ic">👥</span> Equipa</a>
+        <a data-tab="equipa" onclick="return mgrTab(event,'equipa')"><span class="ic">👥</span> Equipa</a>
       </div>
     </nav>
     <div class="mgr-signout">
@@ -118,85 +154,176 @@
 
   <div class="mgr-main">
     <div class="mgr-topbar">
-      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Pesquisar no painel..."></div>
+      <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Pesquisar no painel..." disabled></div>
       <div class="mgr-user"><div class="dot" id="userInitial">?</div> <span id="userNameTop">—</span> <span class="role-tag" id="userRole">—</span></div>
     </div>
 
     <div class="mgr-body">
+
+      <!-- ========== DASHBOARD ========== -->
       <div class="mgr-panel active" id="mgr-dash">
         <h1>Bom dia 👋</h1>
-        <p class="mgr-sub">Aqui está o que está a acontecer na tua loja hoje.</p>
-        <div class="kpi-grid">
-          <div class="kpi-card"><div class="kpi-label">💰 Vendas hoje</div><div class="kpi-value">850.000 Kz</div><div class="kpi-delta up">▲ 12% vs ontem</div></div>
-          <div class="kpi-card"><div class="kpi-label">📦 Pedidos</div><div class="kpi-value">124</div><div class="kpi-delta up">▲ 8 novos</div></div>
-          <div class="kpi-card"><div class="kpi-label">👥 Clientes</div><div class="kpi-value">1.286</div><div class="kpi-delta up">▲ 24 esta semana</div></div>
-          <div class="kpi-card"><div class="kpi-label">🛒 Carrinhos abandonados</div><div class="kpi-value">17</div><div class="kpi-delta down">▼ 3%</div></div>
-        </div>
-        <div class="alert-box">
-          <div class="title">⚠️ Precisa da tua atenção</div>
-          <ul><li>8 produtos com stock baixo</li><li>12 encomendas aguardando processamento</li><li>3 pagamentos pendentes</li></ul>
+        <p class="mgr-sub">Aqui está o que está a acontecer na tua loja.</p>
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi-card"><div class="kpi-label">💰 Total vendido</div><div class="kpi-value">—</div></div>
+          <div class="kpi-card"><div class="kpi-label">🧾 Encomendas</div><div class="kpi-value">—</div></div>
+          <div class="kpi-card"><div class="kpi-label">👥 Clientes</div><div class="kpi-value">—</div></div>
+          <div class="kpi-card"><div class="kpi-label">📦 Stock baixo</div><div class="kpi-value">—</div></div>
         </div>
         <div class="panel">
-          <h3>Últimos pedidos</h3>
-          <table class="mgr-table">
-            <tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>
-            <tr><td>#1024</td><td>João Silva</td><td>75.000 Kz</td><td><span class="status-pill paid">Pago</span></td></tr>
-            <tr><td>#1023</td><td>Maria Costa</td><td>120.000 Kz</td><td><span class="status-pill prep">Preparando</span></td></tr>
-            <tr><td>#1022</td><td>Paulo Santos</td><td>45.000 Kz</td><td><span class="status-pill sent">Enviado</span></td></tr>
-          </table>
+          <h3>Últimas encomendas</h3>
+          <table class="mgr-table" id="dashOrdersTable"><tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr></table>
         </div>
       </div>
 
+      <!-- ========== PRODUTOS ========== -->
       <div class="mgr-panel" id="mgr-produtos">
         <h1>Produtos</h1><p class="mgr-sub">Gere o catálogo — nome, descrição, imagens, preço e stock.</p>
-        <div class="mgr-toolbar"><div class="chip active">Todos</div><div class="chip">Ativos</div><div class="chip">Stock baixo</div><button class="btn btn-primary btn-add">+ Adicionar produto</button></div>
-        <div class="panel">
-          <table class="mgr-table">
-            <tr><th>Produto</th><th>Categoria</th><th>Stock</th><th>Preço</th><th>Estado</th></tr>
-            <tr><td>iPhone 15 Pro</td><td>Telefones</td><td>12</td><td>850.000 Kz</td><td><span class="status-pill paid">Ativo</span></td></tr>
-            <tr><td>Perfume Élan</td><td>Perfumes</td><td>5</td><td>35.000 Kz</td><td><span class="status-pill prep">Stock baixo</span></td></tr>
-          </table>
+        <div class="mgr-toolbar">
+          <div class="chip active" data-filter="todos" onclick="filtrarProdutos('todos', this)">Todos</div>
+          <div class="chip" data-filter="ativos" onclick="filtrarProdutos('ativos', this)">Ativos</div>
+          <div class="chip" data-filter="baixo" onclick="filtrarProdutos('baixo', this)">Stock baixo</div>
+          <button class="btn btn-primary btn-add" onclick="abrirModalProduto(null)">+ Adicionar produto</button>
+        </div>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="produtosTable"><tr><th></th><th>Produto</th><th>Categoria</th><th>Stock</th><th>Preço</th><th>Estado</th><th></th></tr></table>
         </div>
       </div>
 
+      <!-- ========== INVENTÁRIO ========== -->
       <div class="mgr-panel" id="mgr-stock">
-        <h1>Inventário</h1><p class="mgr-sub">Alertas automáticos quando o stock atinge o limite definido.</p>
-        <div class="panel">
-          <table class="mgr-table"><tr><th>Produto</th><th>Stock</th><th>Estado</th></tr>
-          <tr><td>iPhone 15</td><td>12</td><td><span class="status-pill paid">Normal</span></td></tr>
-          <tr><td>AirPods</td><td>2</td><td><span class="status-pill prep">Crítico</span></td></tr></table>
+        <h1>Inventário</h1><p class="mgr-sub">Produtos ordenados por stock — os mais críticos aparecem primeiro.</p>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="stockTable"><tr><th>Produto</th><th>Stock</th><th>Estado</th></tr></table>
         </div>
       </div>
 
+      <!-- ========== ENCOMENDAS ========== -->
       <div class="mgr-panel" id="mgr-encomendas">
         <h1>Encomendas</h1><p class="mgr-sub">Acompanha e atualiza o estado de cada pedido.</p>
-        <div class="panel">
-          <table class="mgr-table"><tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>
-          <tr><td>#1042</td><td>João Silva</td><td>85.000 Kz</td><td><span class="status-pill prep">Preparando</span></td></tr></table>
+        <div class="mgr-toolbar">
+          <input type="text" id="encBusca" placeholder="Pesquisar por nome ou nº do pedido..." oninput="renderEncomendas()" style="flex:1; min-width:200px;">
+          <select id="encFiltroEstado" onchange="renderEncomendas()">
+            <option value="">Todos os estados</option>
+            <option value="novo">Novo</option>
+            <option value="pago">Pago</option>
+            <option value="preparando">Preparando</option>
+            <option value="enviado">Enviado</option>
+            <option value="entregue">Entregue</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+        </div>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="encomendasTable"><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Estado</th><th></th></tr></table>
         </div>
       </div>
 
+      <!-- ========== CLIENTES ========== -->
+      <div class="mgr-panel" id="mgr-clientes">
+        <h1>Clientes</h1><p class="mgr-sub">Pessoas que já fizeram encomendas na loja.</p>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="clientesTable"><tr><th>Nome</th><th>Telefone</th><th>Morada</th><th>Encomendas</th></tr></table>
+        </div>
+      </div>
+
+      <!-- ========== CONTEÚDO DO SITE ========== -->
       <div class="mgr-panel" id="mgr-conteudo">
-        <h1>Conteúdo do site</h1><p class="mgr-sub">Edita textos e banners sem tocar no código.</p>
+        <h1>Conteúdo do site</h1><p class="mgr-sub">Estes textos aparecem na página inicial e no rodapé de toda a loja.</p>
         <div class="panel">
-          <div class="field-row"><label>Nome da loja</label><input type="text" value="Roque Digital"></div>
-          <div class="field-row"><label>Slogan</label><input type="text" value="Qualidade que combina contigo."></div>
+          <div class="field-row"><label>Nome da loja</label><input id="cf-nome" type="text"></div>
+          <div class="field-row"><label>Slogan</label><input id="cf-slogan" type="text"></div>
+          <div class="field-row"><label>Título de destaque</label><input id="cf-hero-titulo" type="text"></div>
+          <div class="field-row"><label>Descrição de destaque</label><textarea id="cf-hero-desc" rows="2"></textarea></div>
+          <div class="field-row"><label>Texto do rodapé</label><input id="cf-rodape" type="text"></div>
+          <div class="field-row"><label>Telefone</label><input id="cf-telefone" type="text"></div>
+          <div class="field-row"><label>E-mail</label><input id="cf-email" type="email"></div>
+          <div class="field-row"><label>WhatsApp (só dígitos, com indicativo)</label><input id="cf-whatsapp" type="text" placeholder="244900000000"></div>
+          <div class="field-row"><label>Morada</label><input id="cf-morada" type="text"></div>
+          <div class="field-row"><label>Instagram (link)</label><input id="cf-instagram" type="text"></div>
+          <div class="field-row"><label>Facebook (link)</label><input id="cf-facebook" type="text"></div>
         </div>
-        <button class="btn btn-primary" style="margin-top:16px;">Guardar alterações</button>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="guardarConteudo()">Guardar alterações</button>
+        <p id="conteudoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
       </div>
 
+      <!-- ========== IMAGENS ========== -->
       <div class="mgr-panel" id="mgr-imagens">
-        <h1>Imagens</h1><p class="mgr-sub">Substitui logo, banners e imagens de produtos.</p>
-        <div class="panel"><p style="font-size:13px; color:var(--text-soft);">Liga o Supabase Storage para ativar o upload de imagens aqui.</p></div>
+        <h1>Imagens</h1><p class="mgr-sub">Substitui o logótipo e a imagem de destaque da página inicial.</p>
+        <div class="panel" style="max-width:420px;">
+          <div class="field" style="margin-bottom:20px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Logótipo</label>
+            <div class="image-upload-box" onclick="document.getElementById('img-logo-file').click()">
+              <img id="img-logo-preview" style="display:none;">
+              <span id="img-logo-placeholder">Toque para escolher uma imagem</span>
+            </div>
+            <input type="file" id="img-logo-file" accept="image/*" style="display:none;" onchange="handleImagemUpload(this,'logo_url','img-logo')">
+            <p class="upload-status" id="img-logo-status"></p>
+          </div>
+          <div class="field">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Imagem de destaque (página inicial)</label>
+            <div class="image-upload-box" onclick="document.getElementById('img-hero-file').click()">
+              <img id="img-hero-preview" style="display:none;">
+              <span id="img-hero-placeholder">Toque para escolher uma imagem</span>
+            </div>
+            <input type="file" id="img-hero-file" accept="image/*" style="display:none;" onchange="handleImagemUpload(this,'hero_url','img-hero')">
+            <p class="upload-status" id="img-hero-status"></p>
+          </div>
+        </div>
       </div>
 
+      <!-- ========== EQUIPA ========== -->
       <div class="mgr-panel" id="mgr-equipa">
-        <h1>Equipa</h1><p class="mgr-sub">Contas com acesso ao painel (Admin e Gestor).</p>
-        <div class="panel" id="teamPanel">
+        <h1>Equipa</h1><p class="mgr-sub">Contas com acesso ao painel. Só o Admin pode alterar funções.</p>
+        <div class="panel" style="padding:0; overflow-x:auto;" id="teamPanel">
           <table class="mgr-table" id="teamTable"><tr><th>Nome</th><th>Email</th><th>Função</th></tr></table>
         </div>
       </div>
+
     </div>
+  </div>
+</div>
+
+<!-- ---------- Modal: Produto ---------- -->
+<div class="mdl-backdrop" id="produtoModal">
+  <div class="mdl-box">
+    <div class="mdl-head"><h3 id="produtoModalTitulo">Novo produto</h3><button class="mdl-close" onclick="fecharModalProduto()">✕</button></div>
+    <div class="mdl-body">
+      <form id="produtoForm">
+        <div class="field"><label>Nome *</label><input id="pf-nome" required></div>
+        <div class="field"><label>Descrição</label><textarea id="pf-desc" rows="2"></textarea></div>
+        <div class="mdl-row">
+          <div class="field"><label>Marca</label><input id="pf-marca"></div>
+          <div class="field"><label>Categoria</label><select id="pf-categoria"></select></div>
+        </div>
+        <div class="mdl-row">
+          <div class="field"><label>Preço (Kz) *</label><input id="pf-preco" type="number" min="0" required></div>
+          <div class="field"><label>Preço promo (opcional)</label><input id="pf-promo" type="number" min="0"></div>
+        </div>
+        <div class="mdl-row">
+          <div class="field"><label>Stock</label><input id="pf-stock" type="number" min="0" value="0"></div>
+          <div class="field"><label>Etiqueta</label><input id="pf-tag" placeholder="NOVO, PROMOÇÃO..."></div>
+        </div>
+        <div class="field">
+          <label>Foto do produto</label>
+          <div class="image-upload-box" onclick="document.getElementById('pf-imagem-file').click()">
+            <img id="pf-imagem-preview" style="display:none;">
+            <span id="pf-imagem-placeholder">Toque para escolher uma imagem</span>
+          </div>
+          <input type="file" id="pf-imagem-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'pf-imagem')">
+          <p class="upload-status" id="pf-imagem-status"></p>
+        </div>
+        <label class="toggle-row"><input id="pf-ativo" type="checkbox" checked style="width:auto;"> Produto ativo (visível na loja)</label>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Guardar produto</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ---------- Modal: Detalhe da encomenda ---------- -->
+<div class="mdl-backdrop" id="encomendaModal">
+  <div class="mdl-box">
+    <div class="mdl-head"><h3>Detalhes da encomenda</h3><button class="mdl-close" onclick="document.getElementById('encomendaModal').classList.remove('open')">✕</button></div>
+    <div class="mdl-body" id="encomendaModalBody"></div>
   </div>
 </div>
 
@@ -204,53 +331,55 @@
   const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
 
-  // A biblioteca do Supabase vem de ../assets/supabase.js (ficheiro local)
-  // em vez de um CDN externo — sem risco de bloqueio pela rede/operadora.
   let supabase = null;
-  try{
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  } catch(e1){
-    console.error('Não foi possível iniciar o Supabase:', e1);
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }
+  catch(e1){ console.error('Não foi possível iniciar o Supabase:', e1); }
+
+  let meuPapel = 'gestor';
+  let modoDemo = false;
+
+  function formatKz(v){ return new Intl.NumberFormat('pt-AO',{maximumFractionDigits:0}).format(v||0) + ' Kz'; }
+  function showToast(msg){
+    let el = document.getElementById('mgr-toast');
+    if(!el){ el = document.createElement('div'); el.id='mgr-toast'; el.className='toast'; document.body.appendChild(el); }
+    el.textContent = msg; el.classList.add('show');
+    clearTimeout(window.__toastT);
+    window.__toastT = setTimeout(()=> el.classList.remove('show'), 2500);
   }
 
+  /* ================= SESSÃO ================= */
   async function verificarSessao(){
     if(!supabase){
-      // Modo demonstração sem Supabase ligado
+      modoDemo = true;
       document.getElementById('gate').style.display='none';
       document.getElementById('mgrShell').style.display='flex';
       document.getElementById('userName').textContent = 'Demo';
       document.getElementById('userNameTop').textContent = 'Demo';
       document.getElementById('userRole').textContent = 'admin';
       document.getElementById('userInitial').textContent = 'D';
+      meuPapel = 'admin';
+      carregarTudo();
       return;
     }
     const { data: { session } } = await supabase.auth.getSession();
     if(!session){ window.location.href = 'index.html'; return; }
 
     const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single();
-    if(!profile || (profile.role !== 'admin' && profile.role !== 'gestor')){
+    if(!profile || !['admin','gestor'].includes(profile.role)){
       await supabase.auth.signOut();
       window.location.href = 'index.html';
       return;
     }
 
+    meuPapel = profile.role;
     document.getElementById('userName').textContent = profile.full_name;
     document.getElementById('userNameTop').textContent = profile.full_name;
     document.getElementById('userRole').textContent = profile.role;
     document.getElementById('userInitial').textContent = profile.full_name.charAt(0).toUpperCase();
     document.getElementById('gate').style.display='none';
     document.getElementById('mgrShell').style.display='flex';
-
-    // Carrega a equipa (apenas admin/gestor visível para si próprios via RLS)
-    const { data: team } = await supabase.from('profiles').select('full_name, email, role');
-    if(team){
-      const table = document.getElementById('teamTable');
-      team.forEach(t=>{
-        table.innerHTML += `<tr><td>${t.full_name}</td><td>${t.email}</td><td><span class="status-pill paid">${t.role}</span></td></tr>`;
-      });
-    }
+    carregarTudo();
   }
-  verificarSessao();
 
   async function terminarSessao(){
     if(supabase) await supabase.auth.signOut();
@@ -265,6 +394,385 @@
     document.getElementById('mgr-'+name).classList.add('active');
     return false;
   }
+
+  function carregarTudo(){
+    carregarCategorias().then(()=>{
+      carregarProdutos();
+    });
+    carregarEncomendas();
+    carregarEquipa();
+    carregarConteudo();
+  }
+
+  /* ================= UPLOAD DE IMAGENS ================= */
+  async function uploadImagem(file){
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+    const nome = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error } = await supabase.storage.from('imagens').upload(nome, file, { cacheControl:'3600', upsert:false });
+    if(error) throw error;
+    const { data } = supabase.storage.from('imagens').getPublicUrl(nome);
+    return data.publicUrl;
+  }
+
+  // Usado no modal de produto (guarda no campo escondido #pf-imagem)
+  async function handleImagemUploadCampo(inputEl, hiddenId){
+    const file = inputEl.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById(hiddenId + '-status');
+    const previewImg = document.getElementById(hiddenId + '-preview');
+    const placeholder = document.getElementById(hiddenId + '-placeholder');
+    if(!supabase || modoDemo){ statusEl.textContent = 'Liga o Supabase para enviar imagens.'; return; }
+    statusEl.textContent = 'A enviar...';
+    try{
+      const url = await uploadImagem(file);
+      inputEl.dataset.url = url;
+      previewImg.src = url; previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      statusEl.textContent = 'Imagem enviada.';
+    }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar imagem: ' + err.message; }
+  }
+
+  // Usado nas Imagens do site (guarda direto no site_settings)
+  async function handleImagemUpload(inputEl, campo, previewPrefix){
+    const file = inputEl.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById(previewPrefix + '-status');
+    const previewImg = document.getElementById(previewPrefix + '-preview');
+    const placeholder = document.getElementById(previewPrefix + '-placeholder');
+    if(!supabase || modoDemo){ statusEl.textContent = 'Liga o Supabase para enviar imagens.'; return; }
+    statusEl.textContent = 'A enviar...';
+    try{
+      const url = await uploadImagem(file);
+      const payload = {}; payload[campo] = url;
+      const { error } = await supabase.from('site_settings').update(payload).eq('id',1);
+      if(error) throw error;
+      previewImg.src = url; previewImg.style.display = 'block';
+      placeholder.style.display = 'none';
+      statusEl.textContent = 'Imagem guardada e já aplicada ao site.';
+    }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar imagem: ' + err.message; }
+  }
+
+  /* ================= CATEGORIAS ================= */
+  let cacheCategorias = [];
+  async function carregarCategorias(){
+    if(!supabase || modoDemo){
+      cacheCategorias = [{id:'1',name:'Aparelhos'},{id:'2',name:'Moda'},{id:'3',name:'Oferta'}];
+      preencherSelectCategorias(); return;
+    }
+    let { data } = await supabase.from('categories').select('*').order('name');
+    if(!data || !data.length){
+      await supabase.from('categories').insert([{name:'Aparelhos'},{name:'Moda'},{name:'Oferta'}]);
+      const r = await supabase.from('categories').select('*').order('name');
+      data = r.data;
+    }
+    cacheCategorias = data || [];
+    preencherSelectCategorias();
+  }
+  function preencherSelectCategorias(){
+    document.getElementById('pf-categoria').innerHTML = cacheCategorias.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  }
+  function nomeCategoria(id){
+    const c = cacheCategorias.find(c=>c.id===id);
+    return c ? c.name : '—';
+  }
+
+  /* ================= PRODUTOS ================= */
+  let cacheProdutos = [];
+  let filtroProdutosAtual = 'todos';
+  async function carregarProdutos(){
+    if(!supabase || modoDemo){
+      cacheProdutos = [
+        {id:'1', name:'iPhone 15 Pro', category_id:'1', stock:12, price:850000, promo_price:null, active:true, image_url:null},
+        {id:'2', name:'Perfume Élan', category_id:'3', stock:3, price:35000, promo_price:28000, active:true, image_url:null}
+      ];
+      renderProdutos(); renderStock(); atualizarDashboard(); return;
+    }
+    const { data, error } = await supabase.from('products').select('*').order('name');
+    cacheProdutos = data || [];
+    renderProdutos();
+    renderStock();
+    atualizarDashboard();
+  }
+  function filtrarProdutos(f, el){
+    filtroProdutosAtual = f;
+    document.querySelectorAll('#mgr-produtos .chip').forEach(c=>c.classList.remove('active'));
+    el.classList.add('active');
+    renderProdutos();
+  }
+  function renderProdutos(){
+    const tbody = document.getElementById('produtosTable');
+    let lista = cacheProdutos;
+    if(filtroProdutosAtual === 'ativos') lista = lista.filter(p=>p.active);
+    if(filtroProdutosAtual === 'baixo') lista = lista.filter(p=>p.stock <= 5);
+    tbody.innerHTML = '<tr><th></th><th>Produto</th><th>Categoria</th><th>Stock</th><th>Preço</th><th>Estado</th><th></th></tr>';
+    if(!lista.length){ tbody.innerHTML += `<tr><td colspan="7" class="empty-state">Sem produtos.</td></tr>`; return; }
+    lista.forEach(p=>{
+      tbody.innerHTML += `<tr>
+        <td>${p.image_url ? `<img class="thumb" src="${p.image_url}">` : `<div class="thumb"></div>`}</td>
+        <td>${p.name}</td>
+        <td>${nomeCategoria(p.category_id)}</td>
+        <td>${p.stock}</td>
+        <td>${p.promo_price ? `<s style="opacity:.5;">${formatKz(p.price)}</s> ${formatKz(p.promo_price)}` : formatKz(p.price)}</td>
+        <td><span class="status-pill ${p.active?'ativo':'inativo'}" style="cursor:pointer;" onclick="toggleAtivoProduto('${p.id}', ${!p.active})">${p.active?'Ativo':'Inativo'}</span></td>
+        <td class="row-actions">
+          <button onclick='abrirModalProduto(${JSON.stringify(p).replace(/'/g,"&apos;")})'>Editar</button>
+          <button class="danger" onclick="apagarProduto('${p.id}')">Apagar</button>
+        </td>
+      </tr>`;
+    });
+  }
+  function renderStock(){
+    const tbody = document.getElementById('stockTable');
+    const lista = [...cacheProdutos].sort((a,b)=>a.stock-b.stock);
+    tbody.innerHTML = '<tr><th>Produto</th><th>Stock</th><th>Estado</th></tr>';
+    if(!lista.length){ tbody.innerHTML += `<tr><td colspan="3" class="empty-state">Sem produtos.</td></tr>`; return; }
+    lista.forEach(p=>{
+      const critico = p.stock <= 5;
+      tbody.innerHTML += `<tr><td>${p.name}</td><td>${p.stock}</td><td><span class="status-pill ${critico?'critico':'normal'}">${critico?'Crítico':'Normal'}</span></td></tr>`;
+    });
+  }
+  async function toggleAtivoProduto(id, novo){
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
+    await supabase.from('products').update({ active: novo }).eq('id', id);
+    carregarProdutos();
+  }
+  async function apagarProduto(id){
+    if(!confirm('Apagar este produto definitivamente?')) return;
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
+    await supabase.from('products').delete().eq('id', id);
+    carregarProdutos();
+  }
+
+  let currentProdutoId = null;
+  function abrirModalProduto(p){
+    currentProdutoId = p ? p.id : null;
+    document.getElementById('produtoModalTitulo').textContent = p ? 'Editar produto' : 'Novo produto';
+    document.getElementById('pf-nome').value = p ? p.name : '';
+    document.getElementById('pf-desc').value = p ? (p.description||'') : '';
+    document.getElementById('pf-marca').value = p ? (p.brand||'') : '';
+    document.getElementById('pf-categoria').value = p ? (p.category_id||'') : (cacheCategorias[0]?cacheCategorias[0].id:'');
+    document.getElementById('pf-preco').value = p ? p.price : '';
+    document.getElementById('pf-promo').value = p && p.promo_price ? p.promo_price : '';
+    document.getElementById('pf-stock').value = p ? p.stock : 0;
+    document.getElementById('pf-tag').value = p ? (p.tag||'') : '';
+    document.getElementById('pf-ativo').checked = p ? p.active : true;
+
+    const fileInput = document.getElementById('pf-imagem-file');
+    fileInput.dataset.url = p ? (p.image_url||'') : '';
+    const previewImg = document.getElementById('pf-imagem-preview');
+    const placeholder = document.getElementById('pf-imagem-placeholder');
+    if(p && p.image_url){ previewImg.src = p.image_url; previewImg.style.display='block'; placeholder.style.display='none'; }
+    else{ previewImg.style.display='none'; placeholder.style.display='block'; }
+    document.getElementById('pf-imagem-status').textContent = '';
+
+    document.getElementById('produtoModal').classList.add('open');
+  }
+  function fecharModalProduto(){ document.getElementById('produtoModal').classList.remove('open'); }
+
+  document.getElementById('produtoForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const payload = {
+      name: document.getElementById('pf-nome').value.trim(),
+      description: document.getElementById('pf-desc').value.trim() || null,
+      brand: document.getElementById('pf-marca').value.trim() || null,
+      category_id: document.getElementById('pf-categoria').value || null,
+      price: Number(document.getElementById('pf-preco').value),
+      promo_price: document.getElementById('pf-promo').value ? Number(document.getElementById('pf-promo').value) : null,
+      stock: Number(document.getElementById('pf-stock').value) || 0,
+      tag: document.getElementById('pf-tag').value.trim() || null,
+      image_url: document.getElementById('pf-imagem-file').dataset.url || null,
+      active: document.getElementById('pf-ativo').checked
+    };
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar produtos.'); fecharModalProduto(); return; }
+    if(currentProdutoId){
+      await supabase.from('products').update(payload).eq('id', currentProdutoId);
+    }else{
+      await supabase.from('products').insert(payload);
+    }
+    fecharModalProduto();
+    showToast('Produto guardado.');
+    carregarProdutos();
+  });
+
+  /* ================= ENCOMENDAS ================= */
+  let cacheEncomendas = [];
+  async function carregarEncomendas(){
+    const box = document.getElementById('encomendasTable');
+    if(!supabase || modoDemo){
+      cacheEncomendas = [];
+      renderEncomendas();
+      atualizarDashboard();
+      return;
+    }
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, customers(full_name, phone, address), order_items(*, products(name))')
+      .order('created_at', { ascending:false });
+    cacheEncomendas = data || [];
+    renderEncomendas();
+    atualizarDashboard();
+    carregarClientes();
+  }
+  function renderEncomendas(){
+    const tbody = document.getElementById('encomendasTable');
+    const termo = (document.getElementById('encBusca').value||'').trim().toLowerCase();
+    const estado = document.getElementById('encFiltroEstado').value;
+    let lista = cacheEncomendas.filter(o=>{
+      if(estado && o.status !== estado) return false;
+      if(termo){
+        const alvo = `${o.customers?o.customers.full_name:''} ${o.order_number}`.toLowerCase();
+        if(!alvo.includes(termo)) return false;
+      }
+      return true;
+    });
+    tbody.innerHTML = '<tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Estado</th><th></th></tr>';
+    if(!lista.length){ tbody.innerHTML += `<tr><td colspan="6" class="empty-state">Sem encomendas.</td></tr>`; return; }
+    const ESTADOS = ['novo','pago','preparando','enviado','entregue','cancelado'];
+    lista.forEach(o=>{
+      tbody.innerHTML += `<tr>
+        <td>#RD${o.order_number}</td>
+        <td>${o.customers ? o.customers.full_name : '—'}</td>
+        <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
+        <td>${formatKz(o.total)}</td>
+        <td><select onchange="mudarEstadoEncomenda('${o.id}', this.value)" style="font-size:12px; padding:4px 8px; border-radius:8px; border:1.5px solid var(--line);">
+          ${ESTADOS.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+        </select></td>
+        <td class="row-actions"><button onclick='verDetalheEncomenda(${JSON.stringify(o).replace(/'/g,"&apos;")})'>Ver detalhes</button></td>
+      </tr>`;
+    });
+  }
+  async function mudarEstadoEncomenda(id, status){
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
+    await supabase.from('orders').update({ status }).eq('id', id);
+    const alvo = cacheEncomendas.find(o=>o.id===id);
+    if(alvo) alvo.status = status;
+    showToast('Estado atualizado.');
+    atualizarDashboard();
+  }
+  function verDetalheEncomenda(o){
+    const itens = (o.order_items||[]).map(i=>`
+      <p style="font-size:13.5px; margin-bottom:6px;">${i.quantity}x ${i.products?i.products.name:'Produto'} — ${formatKz(i.unit_price*i.quantity)}</p>
+    `).join('') || '<p class="empty-state">Sem itens registados.</p>';
+    document.getElementById('encomendaModalBody').innerHTML = `
+      <p style="font-weight:700; margin-bottom:4px;">${o.customers?o.customers.full_name:'Cliente'}</p>
+      <p style="color:var(--text-soft); font-size:13px; margin-bottom:14px;">📞 ${o.customers?o.customers.phone||'—':'—'}<br>📍 ${o.customers?o.customers.address||'—':'—'}</p>
+      ${itens}
+      <p style="font-size:13px; color:var(--text-soft); margin-top:10px;">Taxa de entrega: ${formatKz(o.delivery_fee||0)}</p>
+      <p style="font-weight:700; margin-top:6px; color:var(--brown-900);">Total: ${formatKz(o.total)}</p>
+    `;
+    document.getElementById('encomendaModal').classList.add('open');
+  }
+
+  /* ================= DASHBOARD (KPIs) ================= */
+  function atualizarDashboard(){
+    const validas = cacheEncomendas.filter(o=>o.status!=='cancelado');
+    const totalVendido = validas.reduce((s,o)=>s+Number(o.total),0);
+    const stockBaixo = cacheProdutos.filter(p=>p.stock<=5).length;
+    const clientesUnicos = new Set(cacheEncomendas.map(o=>o.customer_id)).size;
+
+    const kpis = [
+      { label:'💰 Total vendido', value: formatKz(totalVendido) },
+      { label:'🧾 Encomendas', value: cacheEncomendas.length },
+      { label:'👥 Clientes', value: clientesUnicos },
+      { label:'📦 Stock baixo', value: stockBaixo }
+    ];
+    document.getElementById('kpiGrid').innerHTML = kpis.map(k=>`
+      <div class="kpi-card"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.value}</div></div>
+    `).join('');
+
+    const ultimas = cacheEncomendas.slice(0,5);
+    const tbody = document.getElementById('dashOrdersTable');
+    tbody.innerHTML = '<tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>';
+    if(!ultimas.length){ tbody.innerHTML += `<tr><td colspan="4" class="empty-state">Ainda não há encomendas.</td></tr>`; return; }
+    ultimas.forEach(o=>{
+      tbody.innerHTML += `<tr><td>#RD${o.order_number}</td><td>${o.customers?o.customers.full_name:'—'}</td><td>${formatKz(o.total)}</td><td><span class="status-pill ${o.status}">${o.status}</span></td></tr>`;
+    });
+  }
+
+  /* ================= CLIENTES ================= */
+  async function carregarClientes(){
+    const tbody = document.getElementById('clientesTable');
+    if(!supabase || modoDemo){ tbody.innerHTML = '<tr><th>Nome</th><th>Telefone</th><th>Morada</th><th>Encomendas</th></tr><tr><td colspan="4" class="empty-state">Sem dados em modo demo.</td></tr>'; return; }
+    const { data } = await supabase.from('customers').select('*').order('created_at', { ascending:false });
+    const contagem = {};
+    cacheEncomendas.forEach(o=>{ contagem[o.customer_id] = (contagem[o.customer_id]||0) + 1; });
+    tbody.innerHTML = '<tr><th>Nome</th><th>Telefone</th><th>Morada</th><th>Encomendas</th></tr>';
+    if(!data || !data.length){ tbody.innerHTML += `<tr><td colspan="4" class="empty-state">Ainda não há clientes.</td></tr>`; return; }
+    data.forEach(c=>{
+      tbody.innerHTML += `<tr><td>${c.full_name||'—'}</td><td>${c.phone||'—'}</td><td>${c.address||'—'}</td><td>${contagem[c.id]||0}</td></tr>`;
+    });
+  }
+
+  /* ================= EQUIPA ================= */
+  async function carregarEquipa(){
+    const tbody = document.getElementById('teamTable');
+    if(!supabase || modoDemo){ tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Função</th></tr><tr><td colspan="3" class="empty-state">Sem dados em modo demo.</td></tr>'; return; }
+    const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending:false });
+    const papeis = ['admin','gestor','funcionario','armazem','marketing'];
+    tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Função</th></tr>';
+    (data||[]).forEach(u=>{
+      const podeEditar = meuPapel === 'admin';
+      tbody.innerHTML += `<tr>
+        <td>${u.full_name}</td><td>${u.email}</td>
+        <td>${podeEditar ? `
+          <select onchange="mudarPapel('${u.id}', this.value)" style="font-size:12px; padding:4px 8px; border-radius:8px; border:1.5px solid var(--line);">
+            ${papeis.map(p=>`<option value="${p}" ${p===u.role?'selected':''}>${p}</option>`).join('')}
+          </select>` : `<span class="status-pill ativo">${u.role}</span>`}
+        </td>
+      </tr>`;
+    });
+  }
+  async function mudarPapel(id, novoPapel){
+    if(!confirm(`Mudar a função desta conta para "${novoPapel}"?`)){ carregarEquipa(); return; }
+    const { error } = await supabase.from('profiles').update({ role: novoPapel }).eq('id', id);
+    if(error){ showToast('Não foi possível alterar (só o Admin pode fazer isto).'); carregarEquipa(); return; }
+    showToast('Função atualizada.');
+    carregarEquipa();
+  }
+
+  /* ================= CONTEÚDO DO SITE ================= */
+  async function carregarConteudo(){
+    if(!supabase || modoDemo) return;
+    const { data } = await supabase.from('site_settings').select('*').eq('id',1).single();
+    if(!data) return;
+    document.getElementById('cf-nome').value = data.nome_site || '';
+    document.getElementById('cf-slogan').value = data.slogan || '';
+    document.getElementById('cf-hero-titulo').value = data.hero_titulo || '';
+    document.getElementById('cf-hero-desc').value = data.hero_descricao || '';
+    document.getElementById('cf-rodape').value = data.rodape_texto || '';
+    document.getElementById('cf-telefone').value = data.contacto_telefone || '';
+    document.getElementById('cf-email').value = data.contacto_email || '';
+    document.getElementById('cf-whatsapp').value = data.contacto_whatsapp || '';
+    document.getElementById('cf-morada').value = data.contacto_morada || '';
+    document.getElementById('cf-instagram').value = data.redes_instagram || '';
+    document.getElementById('cf-facebook').value = data.redes_facebook || '';
+
+    if(data.logo_url){ document.getElementById('img-logo-preview').src = data.logo_url; document.getElementById('img-logo-preview').style.display='block'; document.getElementById('img-logo-placeholder').style.display='none'; }
+    if(data.hero_url){ document.getElementById('img-hero-preview').src = data.hero_url; document.getElementById('img-hero-preview').style.display='block'; document.getElementById('img-hero-placeholder').style.display='none'; }
+  }
+  async function guardarConteudo(){
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar o conteúdo.'); return; }
+    const payload = {
+      nome_site: document.getElementById('cf-nome').value.trim() || 'Roque Digital',
+      slogan: document.getElementById('cf-slogan').value.trim(),
+      hero_titulo: document.getElementById('cf-hero-titulo').value.trim(),
+      hero_descricao: document.getElementById('cf-hero-desc').value.trim(),
+      rodape_texto: document.getElementById('cf-rodape').value.trim(),
+      contacto_telefone: document.getElementById('cf-telefone').value.trim() || null,
+      contacto_email: document.getElementById('cf-email').value.trim() || null,
+      contacto_whatsapp: document.getElementById('cf-whatsapp').value.replace(/\D/g,'') || null,
+      contacto_morada: document.getElementById('cf-morada').value.trim() || null,
+      redes_instagram: document.getElementById('cf-instagram').value.trim() || null,
+      redes_facebook: document.getElementById('cf-facebook').value.trim() || null
+    };
+    const { error } = await supabase.from('site_settings').update(payload).eq('id',1);
+    const statusEl = document.getElementById('conteudoStatus');
+    if(error){ statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Erro ao guardar: ' + error.message; return; }
+    statusEl.style.color = 'var(--success)';
+    statusEl.textContent = 'Guardado! As alterações já se aplicam à loja.';
+  }
+
+  verificarSessao();
 </script>
 
 </body>
