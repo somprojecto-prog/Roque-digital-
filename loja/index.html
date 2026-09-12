@@ -13,17 +13,17 @@
      ROQUE DIGITAL — Tema Castanho + Preto (Loja do Cliente)
   ========================================================== */
   :root{
-    --bg:#0C0805;
-    --bg-2:#17100A;
-    --surface:#1C140D;
-    --brown:#3D231A;
-    --brown-light:#5C3624;
-    --brown-deep:#0F0906;
-    --gold:#E08F2E;
-    --gold-light:#F4C384;
+    --bg:#070403;
+    --bg-2:#120C08;
+    --surface:#1E140C;
+    --brown:#4A2A18;
+    --brown-light:#6B3D22;
+    --brown-deep:#000000;
+    --gold:#8B5230;
+    --gold-light:#B8794E;
     --text:#F4ECE1;
     --text-soft:#B9A48C;
-    --line:#2E2119;
+    --line:#2A2019;
     --radius:14px;
     --shadow:0 14px 34px -14px rgba(0,0,0,0.6);
   }
@@ -41,10 +41,10 @@
   button{font-family:inherit; cursor:pointer; border:none;}
 
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 26px; border-radius:10px; font-weight:700; font-size:14.5px; transition:.2s; }
-  .btn-gold{ background:var(--gold); color:#1C1006; }
+  .btn-gold{ background:var(--gold); color:var(--text); }
   .btn-gold:hover{ background:var(--gold-light); transform:translateY(-1px); }
   .btn-outline{ background:transparent; border:1.5px solid var(--gold); color:var(--gold-light); }
-  .btn-outline:hover{ background:var(--gold); color:#1C1006; }
+  .btn-outline:hover{ background:var(--gold); color:var(--text); }
 
   /* ---------- Ecrã de carregamento ---------- */
   #loading-overlay{ position:fixed; inset:0; z-index:9999; background:var(--brown-deep); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; transition:opacity .45s ease, visibility .45s ease;
@@ -61,7 +61,7 @@
   @keyframes loading-fade{ 0%,100%{ opacity:.35; } 50%{ opacity:1; } }
 
   /* ---------- Toast ---------- */
-  .toast{ position:fixed; bottom:86px; left:50%; transform:translate(-50%,20px); background:var(--gold); color:#1C1006; font-weight:700; font-size:13px; padding:11px 20px; border-radius:999px; box-shadow:0 10px 24px rgba(0,0,0,.4); opacity:0; transition:all .3s ease; pointer-events:none; z-index:400; }
+  .toast{ position:fixed; bottom:86px; left:50%; transform:translate(-50%,20px); background:var(--gold); color:var(--text); font-weight:700; font-size:13px; padding:11px 20px; border-radius:999px; box-shadow:0 10px 24px rgba(0,0,0,.4); opacity:0; transition:all .3s ease; pointer-events:none; z-index:400; }
   .toast.show{ opacity:1; transform:translate(-50%,0); }
 
   /* ---------- Cabeçalho ---------- */
@@ -119,10 +119,11 @@
   .cat-card .label{ font-size:12px; font-weight:700; color:var(--text-soft); }
 
   /* ---------- Carrossel de produtos ---------- */
-  .carousel-wrap{ position:relative; margin-bottom:40px; }
+  .carousel-wrap{ position:relative; margin-bottom:40px; background:var(--brown-deep); border:1px solid var(--line); border-radius:20px; padding:22px 18px 26px; }
+  .carousel-inner{ position:relative; }
   .carousel-track{ display:flex; gap:14px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x proximity; padding-bottom:6px; -ms-overflow-style:none; scrollbar-width:none; }
   .carousel-track::-webkit-scrollbar{ display:none; }
-  .carousel-arrow{ position:absolute; top:38%; transform:translateY(-50%); z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,0.55); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .carousel-arrow{ position:absolute; top:50%; transform:translateY(-50%); z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:16px; }
   .carousel-arrow.left{ left:-4px; } .carousel-arrow.right{ right:-4px; }
   .carousel-dots{ display:flex; justify-content:center; gap:5px; margin-top:10px; }
   .carousel-dots .dot{ width:6px; height:6px; border-radius:50%; background:var(--line); }
@@ -131,14 +132,14 @@
   .prod-card{ flex:0 0 auto; width:190px; scroll-snap-align:start; background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; transition:.2s; position:relative; }
   .prod-card:hover{ box-shadow:var(--shadow); transform:translateY(-3px); border-color:var(--brown-light); }
   .prod-img{ height:130px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; }
-  .prod-tag{ position:absolute; top:9px; left:9px; background:var(--gold); color:#1C1006; font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; z-index:2; }
+  .prod-tag{ position:absolute; top:9px; left:9px; background:var(--gold); color:var(--text); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; z-index:2; }
   .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text); transition:.2s; z-index:2; }
   .prod-body{ padding:13px 14px 15px; }
   .prod-name{ font-size:13.5px; font-weight:700; margin-bottom:3px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .prod-brand{ font-size:11px; color:var(--text-soft); margin-bottom:8px; }
   .prod-price-row{ display:flex; align-items:center; justify-content:space-between; }
   .prod-price{ font-weight:700; font-size:14px; color:var(--gold-light); }
-  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--gold); color:#1C1006; font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
+  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--gold); color:var(--text); font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; }
   .prod-add:hover{ background:var(--gold-light); transform:scale(1.08); }
   .empty-state{ padding:30px 10px; text-align:center; color:var(--text-soft); font-size:13px; }
 
@@ -170,7 +171,7 @@
   .bottom-nav a{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 4px; border-radius:10px; color:var(--text-soft); font-size:10.5px; font-weight:600; transition:.15s; position:relative; }
   .bottom-nav a svg{ flex-shrink:0; }
   .bottom-nav a.active{ color:var(--gold-light); }
-  .bottom-nav a .nav-badge{ position:absolute; top:0; right:22%; background:var(--gold); color:#1C1006; font-size:9px; font-weight:800; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .bottom-nav a .nav-badge{ position:absolute; top:0; right:22%; background:var(--gold); color:var(--text); font-size:9px; font-weight:800; width:15px; height:15px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
 
   /* ---------- Overlay de pesquisa ---------- */
   .search-overlay{ position:fixed; inset:0; background:rgba(11,7,5,0.92); z-index:300; display:none; padding:70px 22px; }
@@ -255,9 +256,10 @@
       <div><p class="section-eyebrow">Destaques</p><h2>🔥 Produtos em destaque</h2></div>
       <a href="#">Ver tudo →</a>
     </div>
-    <button class="carousel-arrow left" onclick="scrollCarousel('destaquesTrack',-220)">‹</button>
-    <button class="carousel-arrow right" onclick="scrollCarousel('destaquesTrack',220)">›</button>
-    <div class="carousel-track" id="destaquesTrack">
+    <div class="carousel-inner">
+      <button class="carousel-arrow left" onclick="scrollCarousel('destaquesTrack',-220)">‹</button>
+      <button class="carousel-arrow right" onclick="scrollCarousel('destaquesTrack',220)">›</button>
+      <div class="carousel-track" id="destaquesTrack">
       <div class="prod-card">
         <div class="prod-img">📱<span class="prod-tag">NOVO</span><div class="prod-fav">♡</div></div>
         <div class="prod-body"><div class="prod-name">iPhone 15 Pro</div><div class="prod-brand">Apple · ⭐ 4.8</div>
@@ -283,6 +285,7 @@
         <div class="prod-body"><div class="prod-name">Camisa Slim</div><div class="prod-brand">Zara · ⭐ 4.5</div>
           <div class="prod-price-row"><span class="prod-price">18.000 Kz</span><div class="prod-add">+</div></div></div>
       </div>
+      </div>
     </div>
     <div class="carousel-dots" id="destaquesDots"></div>
   </section>
@@ -304,14 +307,14 @@
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
     </a>
     <a href="https://wa.me/244900000000" target="_blank" rel="noopener" class="social-icon" aria-label="WhatsApp">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2c-5.5 0-10 4.5-10 10 0 1.77.46 3.45 1.32 4.94L2 22l5.2-1.36A9.94 9.94 0 0 0 12.04 22c5.5 0 10-4.5 10-10s-4.5-10-10-10zm0 18.14c-1.6 0-3.16-.43-4.5-1.24l-.32-.19-3.08.81.82-3-.21-.33a8.15 8.15 0 0 1-1.25-4.35c0-4.51 3.67-8.18 8.18-8.18s8.18 3.67 8.18 8.18-3.67 8.3-8.18 8.3z"/></svg>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12.004 2.003c-5.523 0-10 4.477-10 10 0 1.766.464 3.484 1.345 4.997l-1.42 5.19 5.318-1.394a9.958 9.958 0 0 0 4.757 1.207h.004c5.522 0 9.999-4.477 9.999-10 0-2.67-1.04-5.182-2.929-7.07a9.935 9.935 0 0 0-7.074-2.93zm0 18.19h-.003a8.164 8.164 0 0 1-4.166-1.14l-.299-.177-3.155.827.842-3.075-.194-.316a8.147 8.147 0 0 1-1.253-4.309c.001-4.508 3.671-8.176 8.184-8.176a8.13 8.13 0 0 1 5.786 2.398 8.126 8.126 0 0 1 2.394 5.79c-.002 4.51-3.672 8.178-8.136 8.178z"/><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
     </a>
   </div>
   <p class="footer-copy">© 2026 Roque Digital — Todos os direitos reservados.</p>
 </footer>
 
 <a href="https://wa.me/244900000000" target="_blank" rel="noopener" class="whatsapp-float" aria-label="Fala connosco no WhatsApp">
-  <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12.04 2c-5.5 0-10 4.5-10 10 0 1.77.46 3.45 1.32 4.94L2 22l5.2-1.36A9.94 9.94 0 0 0 12.04 22c5.5 0 10-4.5 10-10s-4.5-10-10-10zm0 18.14c-1.6 0-3.16-.43-4.5-1.24l-.32-.19-3.08.81.82-3-.21-.33a8.15 8.15 0 0 1-1.25-4.35c0-4.51 3.67-8.18 8.18-8.18s8.18 3.67 8.18 8.18-3.67 8.3-8.18 8.3z"/></svg>
+  <svg width="27" height="27" viewBox="0 0 24 24" fill="#fff"><path d="M12.004 2.003c-5.523 0-10 4.477-10 10 0 1.766.464 3.484 1.345 4.997l-1.42 5.19 5.318-1.394a9.958 9.958 0 0 0 4.757 1.207h.004c5.522 0 9.999-4.477 9.999-10 0-2.67-1.04-5.182-2.929-7.07a9.935 9.935 0 0 0-7.074-2.93zm0 18.19h-.003a8.164 8.164 0 0 1-4.166-1.14l-.299-.177-3.155.827.842-3.075-.194-.316a8.147 8.147 0 0 1-1.253-4.309c.001-4.508 3.671-8.176 8.184-8.176a8.13 8.13 0 0 1 5.786 2.398 8.126 8.126 0 0 1 2.394 5.79c-.002 4.51-3.672 8.178-8.136 8.178z"/><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
 </a>
 
 <nav class="bottom-nav">
