@@ -82,37 +82,6 @@
   .cat-strip-inner a{ transition:.2s; opacity:.9; }
   .cat-strip-inner a:hover{ color:var(--gold-light); opacity:1; }
 
-  /* ---------- Banner "ver mais produtos" (abaixo do cabeçalho) ---------- */
-  .discover-banner{
-    background:linear-gradient(160deg, var(--brown-deep) 0%, var(--brown) 60%, var(--brown-light) 130%);
-    border-bottom:1.5px solid var(--gold);
-    padding:44px 24px 48px;
-    text-align:center;
-    position:relative;
-    overflow:hidden;
-  }
-  .discover-banner::before{
-    content:'';
-    position:absolute; inset:0;
-    background:
-      radial-gradient(circle at 20% 20%, rgba(192,138,62,0.20), transparent 55%),
-      radial-gradient(circle at 80% 80%, rgba(192,138,62,0.14), transparent 55%);
-  }
-  .discover-inner{ position:relative; z-index:2; max-width:480px; margin:0 auto; }
-  .discover-eyebrow{ color:var(--gold-light); font-weight:700; font-size:11.5px; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:14px; }
-  .discover-banner h2{ font-size:30px; line-height:1.18; margin-bottom:20px; color:var(--text); }
-  .discover-banner p{ color:var(--text-soft); font-size:14px; line-height:1.6; margin-bottom:24px; }
-
-  /* ---------- Carrossel de imagens (roda a cada 3s) ---------- */
-  .icon-carousel{ position:relative; width:150px; height:150px; margin:0 auto 22px; border-radius:50%; overflow:hidden; border:2px solid var(--gold); box-shadow:0 0 24px rgba(192,138,62,0.35); }
-  .icon-slide{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 0.9s ease; }
-  .icon-slide.active{ opacity:1; }
-  .icon-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:22px; margin-top:-10px; }
-  .icon-dots .dot{ width:6px; height:6px; border-radius:50%; background:var(--line); transition:.3s; }
-  .icon-dots .dot.active{ background:var(--gold); width:16px; border-radius:4px; }
-  .discover-btn{ display:inline-flex; align-items:center; gap:8px; background:var(--text); color:var(--brown-deep); font-weight:700; font-size:14px; padding:13px 28px; border-radius:999px; border:1.5px solid var(--gold); transition:.2s; }
-  .discover-btn:hover{ background:var(--gold-light); transform:translateY(-1px); }
-
   main.store{ max-width:1200px; margin:0 auto; padding:26px 22px 50px; }
 
   /* ---------- Hero ---------- */
@@ -127,14 +96,14 @@
   .hero-visual .logo-big img{ width:100%; height:100%; object-fit:cover; }
 
   /* ---------- Barra de vantagens (gira automaticamente) ---------- */
-  .feature-bar{ position:relative; min-height:74px; background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; padding:18px 20px; margin-bottom:10px; overflow:hidden; }
+  .feature-bar{ position:relative; min-height:74px; background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; padding:18px 20px; margin-bottom:10px; overflow:hidden; cursor:pointer; touch-action:pan-y; user-select:none; }
   .feature-slide{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:12px; padding:18px 20px; opacity:0; transform:translateX(16px); transition:opacity .5s ease, transform .5s ease; pointer-events:none; }
   .feature-slide.active{ opacity:1; transform:translateX(0); pointer-events:auto; position:relative; }
   .feature-slide .fi-ic{ font-size:24px; flex-shrink:0; }
   .feature-slide h5{ font-size:13.5px; margin-bottom:2px; color:var(--text); }
   .feature-slide p{ font-size:11.5px; color:var(--text-soft); line-height:1.3; margin:0; }
   .feature-dots{ display:flex; justify-content:center; gap:6px; margin-top:12px; margin-bottom:36px; }
-  .feature-dots .dot{ width:6px; height:6px; border-radius:50%; background:var(--line); transition:.3s; }
+  .feature-dots .dot{ width:6px; height:6px; border-radius:50%; background:var(--line); transition:.3s; cursor:pointer; }
   .feature-dots .dot.active{ background:var(--gold); width:16px; border-radius:4px; }
 
   .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
@@ -257,23 +226,6 @@
   </div>
 </nav>
 
-<section class="discover-banner reveal">
-  <div class="discover-inner">
-    <div class="discover-eyebrow">O melhor para ti</div>
-    <h2>Descobre os produtos que combinam contigo.</h2>
-    <div class="icon-carousel" id="iconCarousel">
-      <img src="../assets/icon-entrega.jpg" class="icon-slide active" alt="Entrega rápida">
-      <img src="../assets/icon-pagamento.jpg" class="icon-slide" alt="Pagamento seguro">
-      <img src="../assets/icon-moda.jpg" class="icon-slide" alt="Moda">
-    </div>
-    <div class="icon-dots" id="iconDots">
-      <span class="dot active"></span><span class="dot"></span><span class="dot"></span>
-    </div>
-    <p>Tecnologia, moda, perfumes e muito mais — tudo escolhido com cuidado para uma melhor satisfação de compra.</p>
-    <a href="#produtos" class="discover-btn">Ver mais produtos →</a>
-  </div>
-</section>
-
 <main class="store">
   <section class="hero reveal">
     <div class="hero-copy">
@@ -292,7 +244,7 @@
     <div class="feature-slide"><span class="fi-ic">💬</span><div><h5>Suporte dedicado</h5><p>Sempre pronto a ajudar</p></div></div>
   </div>
   <div class="feature-dots" id="featureDots">
-    <span class="dot active"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span class="dot active" onclick="irParaSlide(0)"></span><span class="dot" onclick="irParaSlide(1)"></span><span class="dot" onclick="irParaSlide(2)"></span><span class="dot" onclick="irParaSlide(3)"></span>
   </div>
 
   <section class="reveal">
@@ -560,34 +512,34 @@
   }, { threshold:0.12 });
   document.querySelectorAll('.reveal').forEach(el=> revealObserver.observe(el));
 
-  // Carrossel de imagens (roda a cada 3 segundos)
+  // Barra de vantagens: roda ao deslizar (swipe) ou tocar — sem temporizador
   (function(){
-    const slides = document.querySelectorAll('#iconCarousel .icon-slide');
-    const dots = document.querySelectorAll('#iconDots .dot');
-    if(!slides.length) return;
-    let i = 0;
-    setInterval(()=>{
-      slides[i].classList.remove('active');
-      dots[i]?.classList.remove('active');
-      i = (i + 1) % slides.length;
-      slides[i].classList.add('active');
-      dots[i]?.classList.add('active');
-    }, 3000);
-  })();
-
-  // Barra de vantagens giratória (roda a cada 3 segundos)
-  (function(){
+    const bar = document.getElementById('featureBar');
     const slides = document.querySelectorAll('#featureBar .feature-slide');
     const dots = document.querySelectorAll('#featureDots .dot');
-    if(!slides.length) return;
-    let i = 0;
-    setInterval(()=>{
-      slides[i].classList.remove('active');
-      dots[i]?.classList.remove('active');
-      i = (i + 1) % slides.length;
-      slides[i].classList.add('active');
-      dots[i]?.classList.add('active');
-    }, 3000);
+    if(!bar || !slides.length) return;
+    let atual = 0;
+
+    window.irParaSlide = function(idx){
+      slides[atual].classList.remove('active');
+      dots[atual]?.classList.remove('active');
+      atual = (idx + slides.length) % slides.length;
+      slides[atual].classList.add('active');
+      dots[atual]?.classList.add('active');
+    };
+
+    // Toque na barra avança para o slide seguinte
+    bar.addEventListener('click', ()=> window.irParaSlide(atual + 1));
+
+    // Deslizar (swipe) para a esquerda/direita
+    let startX = 0;
+    bar.addEventListener('touchstart', e=>{ startX = e.touches[0].clientX; }, { passive:true });
+    bar.addEventListener('touchend', e=>{
+      const diff = e.changedTouches[0].clientX - startX;
+      if(Math.abs(diff) > 30){
+        window.irParaSlide(diff < 0 ? atual + 1 : atual - 1);
+      }
+    }, { passive:true });
   })();
 </script>
 
