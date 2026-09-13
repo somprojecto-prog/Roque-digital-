@@ -85,15 +85,37 @@
   main.store{ max-width:1200px; margin:0 auto; padding:26px 22px 50px; }
 
   /* ---------- Hero ---------- */
-  .hero{ background:linear-gradient(135deg, var(--brown-deep) 0%, var(--brown) 55%, var(--brown-light) 100%); border-radius:22px; padding:52px 42px; display:grid; grid-template-columns:1.15fr 0.85fr; gap:22px; align-items:center; position:relative; overflow:hidden; margin-bottom:28px; border:1.5px solid var(--gold); }
-  .hero::before{ content:''; position:absolute; right:-80px; top:-80px; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle, rgba(224,143,46,0.25), transparent 70%); }
+  .hero{ background:radial-gradient(ellipse 120% 100% at 75% 15%, rgba(224,143,46,0.22), transparent 55%), linear-gradient(135deg, var(--brown-deep) 0%, var(--brown) 55%, var(--brown-light) 100%); border-radius:24px; padding:56px 44px; display:grid; grid-template-columns:1.15fr 0.85fr; gap:26px; align-items:center; position:relative; overflow:hidden; margin-bottom:28px; border:1.5px solid var(--gold); box-shadow:0 24px 60px -22px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .hero::before{ content:''; position:absolute; right:-90px; top:-90px; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle, rgba(224,143,46,0.28), transparent 70%); }
+  .hero::after{ content:''; position:absolute; left:-60px; bottom:-90px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle, rgba(107,61,34,0.35), transparent 70%); }
   .hero-copy{ position:relative; z-index:2; }
-  .hero-eyebrow{ color:var(--gold-light); font-weight:700; font-size:12.5px; letter-spacing:0.1em; margin-bottom:14px; text-transform:uppercase; }
-  .hero h1{ font-size:40px; line-height:1.15; margin-bottom:16px; }
-  .hero p{ color:var(--text-soft); font-size:15px; max-width:420px; margin-bottom:24px; line-height:1.6; }
+  .hero-eyebrow{ color:var(--gold-light); font-weight:700; font-size:12.5px; letter-spacing:0.14em; margin-bottom:16px; text-transform:uppercase; display:flex; align-items:center; gap:10px; }
+  .hero-eyebrow::before{ content:''; width:26px; height:2px; background:var(--gold); border-radius:2px; }
+  .hero h1{ font-size:44px; line-height:1.12; margin-bottom:18px; background:linear-gradient(120deg, var(--text) 40%, var(--gold-light)); -webkit-background-clip:text; background-clip:text; }
+  .hero p{ color:var(--text-soft); font-size:15.5px; max-width:420px; margin-bottom:28px; line-height:1.65; }
+  .hero .btn-gold{ box-shadow:0 14px 28px -10px rgba(224,143,46,0.45); }
   .hero-visual{ position:relative; z-index:2; display:flex; align-items:center; justify-content:center; }
-  .hero-visual .logo-big{ width:210px; height:210px; border-radius:50%; overflow:hidden; border:6px solid rgba(255,255,255,0.08); box-shadow:0 30px 60px -18px rgba(0,0,0,0.6); }
-  .hero-visual .logo-big img{ width:100%; height:100%; object-fit:cover; }
+  .hero-rotator{ position:relative; width:210px; height:210px; border-radius:50%; overflow:hidden; border:6px solid rgba(255,255,255,0.08); box-shadow:0 30px 60px -18px rgba(0,0,0,0.6); background:#000; }
+  .hero-rotator img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; animation:heroRotate 8s infinite; }
+  .hero-rotator img:nth-child(1){ animation-delay:-0s; }
+  .hero-rotator img:nth-child(2){ animation-delay:-1s; }
+  .hero-rotator img:nth-child(3){ animation-delay:-2s; }
+  .hero-rotator img:nth-child(4){ animation-delay:-3s; }
+  .hero-rotator img:nth-child(5){ animation-delay:-4s; }
+  .hero-rotator img:nth-child(6){ animation-delay:-5s; }
+  .hero-rotator img:nth-child(7){ animation-delay:-6s; }
+  .hero-rotator img:nth-child(8){ animation-delay:-7s; }
+  @keyframes heroRotate{
+    0%{ opacity:0; transform:scale(1.04); }
+    2%{ opacity:1; transform:scale(1); }
+    11%{ opacity:1; transform:scale(1); }
+    13%{ opacity:0; transform:scale(0.98); }
+    100%{ opacity:0; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero-rotator img{ animation:none; opacity:0; }
+    .hero-rotator img:nth-child(1){ opacity:1; }
+  }
 
   /* ---------- Barra de vantagens (gira automaticamente) ---------- */
   .feature-bar{ position:relative; min-height:74px; background:var(--surface); border:1.5px solid var(--gold); border-radius:14px; padding:18px 20px; margin-bottom:10px; overflow:hidden; cursor:pointer; touch-action:pan-y; user-select:none; }
@@ -188,8 +210,11 @@
 
   @media (max-width: 980px){
     .cat-grid{ grid-template-columns:repeat(3,1fr); }
-    .hero{ grid-template-columns:1fr; padding:34px 24px; }
-    .hero-visual{ display:none; }
+    .hero{ grid-template-columns:1fr; padding:34px 24px; text-align:center; }
+    .hero-eyebrow{ justify-content:center; }
+    .hero p{ margin-left:auto; margin-right:auto; }
+    .hero-visual{ order:-1; margin-bottom:18px; }
+    .hero-rotator{ width:120px; height:120px; border-width:4px; }
   }
 </style>
 </head>
@@ -234,7 +259,18 @@
       <p class="js-hero-descricao">Encontra os melhores produtos com entrega rápida em Luanda e arredores.</p>
       <a href="#produtos" class="btn btn-gold">Comprar agora →</a>
     </div>
-    <div class="hero-visual"><div class="logo-big"><img src="../assets/logo.png" alt="Roque Digital"></div></div>
+    <div class="hero-visual">
+      <div class="hero-rotator">
+        <img src="../assets/hero-rotate/rotate-1-dado.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-2-espiral.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-3-nota.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-4-aranha.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-5-logo.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-6-airpods.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-7-nota2.jpg" alt="">
+        <img src="../assets/hero-rotate/rotate-8-coroa.jpg" alt="">
+      </div>
+    </div>
   </section>
 
   <div class="feature-bar reveal" id="featureBar">
