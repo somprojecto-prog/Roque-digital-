@@ -106,8 +106,15 @@
 
   .empty-state{ color:var(--text-soft); font-size:13px; padding:20px 0; text-align:center; }
 
+  .mgr-sidebar-backdrop{ display:none; position:fixed; inset:0; background:rgba(20,12,7,0.55); z-index:250; }
+  .mgr-hamburger{ display:none; width:38px; height:38px; border-radius:9px; border:1.5px solid var(--line); align-items:center; justify-content:center; font-size:18px; background:var(--white); cursor:pointer; flex-shrink:0; }
+
   @media (max-width: 980px){
-    .mgr-sidebar{ display:none; }
+    .mgr-sidebar{ position:fixed; top:0; left:0; height:100vh; z-index:300; transform:translateX(-100%); transition:transform .25s ease; }
+    .mgr-sidebar.open{ transform:translateX(0); }
+    .mgr-sidebar-backdrop.open{ display:block; }
+    .mgr-hamburger{ display:flex; }
+    .mgr-topbar .search-bar{ display:none; }
     .kpi-grid{ grid-template-columns:1fr 1fr; }
     .mgr-grid-2{ grid-template-columns:1fr; }
     .mdl-row{ flex-direction:column; }
@@ -118,8 +125,10 @@
 
 <div class="gate" id="gate">A verificar sessão...</div>
 
+<div class="mgr-sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
 <div class="mgr-shell" id="mgrShell" style="display:none;">
-  <aside class="mgr-sidebar">
+  <aside class="mgr-sidebar" id="mgrSidebar">
     <div class="mgr-brand">
       <div class="logo-circle"><img src="../assets/logo.png" alt="Roque Digital"></div>
       <div class="mgr-brand-text">Roque Digital<span>PAINEL DE GESTÃO</span></div>
@@ -154,6 +163,7 @@
 
   <div class="mgr-main">
     <div class="mgr-topbar">
+      <button class="mgr-hamburger" onclick="toggleSidebar()" aria-label="Abrir menu">☰</button>
       <div class="search-bar"><span class="icon">🔍</span><input type="text" placeholder="Pesquisar no painel..." disabled></div>
       <div class="mgr-user"><div class="dot" id="userInitial">?</div> <span id="userNameTop">—</span> <span class="role-tag" id="userRole">—</span></div>
     </div>
@@ -392,7 +402,14 @@
     e.currentTarget.classList.add('active');
     document.querySelectorAll('.mgr-panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('mgr-'+name).classList.add('active');
+    document.getElementById('mgrSidebar').classList.remove('open');
+    document.getElementById('sidebarBackdrop').classList.remove('open');
     return false;
+  }
+
+  function toggleSidebar(){
+    document.getElementById('mgrSidebar').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
   }
 
   function carregarTudo(){
