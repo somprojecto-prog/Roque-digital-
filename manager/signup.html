@@ -40,8 +40,8 @@
 
 <div class="auth-box">
   <div class="auth-logo"><img src="../assets/logo.png" alt="Roque Digital"></div>
-  <h1 class="auth-title" style="text-align:center;">Criar conta de acesso</h1>
-  <p class="auth-sub">Regista-te como Administrador ou Gestor</p>
+  <h1 class="auth-title" style="text-align:center;">Pedir acesso ao painel</h1>
+  <p class="auth-sub">A tua conta fica pendente até um Admin te dar acesso</p>
 
   <form id="signupForm">
     <div class="field">
@@ -57,21 +57,7 @@
       <input type="password" id="password" required minlength="6" placeholder="Mínimo 6 caracteres">
     </div>
 
-    <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Função</label>
-    <div class="role-row">
-      <div class="role-opt selected" data-role="admin" onclick="selectRole('admin')">
-        <div class="ic">👑</div>
-        <div class="lbl">Admin</div>
-        <div class="desc">Controlo total da loja</div>
-      </div>
-      <div class="role-opt" data-role="gestor" onclick="selectRole('gestor')">
-        <div class="ic">👨‍💼</div>
-        <div class="lbl">Gestor</div>
-        <div class="desc">Produtos, pedidos e stock</div>
-      </div>
-    </div>
-
-    <button type="submit" class="btn btn-primary auth-btn">Criar conta</button>
+    <button type="submit" class="btn btn-primary auth-btn">Pedir acesso</button>
     <div id="msg" class="msg"></div>
   </form>
 
@@ -86,12 +72,6 @@
   const msg = document.getElementById('msg');
   const btn = form.querySelector('button[type="submit"]');
   const btnTextoOriginal = btn.textContent;
-
-  let selectedRole = 'admin';
-  function selectRole(role){
-    selectedRole = role;
-    document.querySelectorAll('.role-opt').forEach(el=> el.classList.toggle('selected', el.dataset.role === role));
-  }
 
   // A biblioteca do Supabase agora vem de ../assets/supabase.js (ficheiro
   // local, dentro do próprio site) em vez de um CDN externo — deixa de
@@ -151,7 +131,7 @@
       const { data, error } = await comTimeout(
         supabase.auth.signUp({
           email, password,
-          options:{ data:{ full_name: fullName, role: selectedRole } }
+          options:{ data:{ full_name: fullName, role: 'pendente' } }
         }),
         10000
       );
@@ -172,13 +152,14 @@
       }
 
       if(data.session){
-        // "Confirm email" está desligado — já entrou automaticamente
+        // "Confirm email" está desligado — já tem sessão, mas fica pendente
         msg.className = 'msg ok';
-        msg.textContent = 'Conta criada e sessão iniciada! A redirecionar...';
-        setTimeout(()=>{ window.location.href = 'dashboard.html'; }, 700);
+        msg.textContent = 'Pedido enviado! A tua conta está pendente — pede a um Admin para te dar acesso em "Equipa".';
+        await supabase.auth.signOut();
+        form.reset();
       } else if(data.user){
         msg.className = 'msg ok';
-        msg.textContent = 'Conta criada com sucesso! O teu Supabase exige confirmação por email — verifica a tua caixa de entrada antes de entrares.';
+        msg.textContent = 'Pedido enviado! Se o teu Supabase pedir confirmação por email, confirma primeiro; depois, pede a um Admin para te dar acesso em "Equipa".';
         form.reset();
       } else {
         msg.className = 'msg error';

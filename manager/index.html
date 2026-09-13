@@ -50,7 +50,7 @@
     <div id="msg" class="msg"></div>
   </form>
 
-  <p class="auth-foot">Ainda não tens conta? <a href="signup.html">Criar conta de acesso</a></p>
+  <p class="auth-foot">Ainda não tens conta? <a href="signup.html">Pedir acesso</a></p>
 </div>
 
 <script>
@@ -146,7 +146,9 @@
       btn.disabled = false;
       btn.textContent = btnTextoOriginal;
       msg.className = 'msg error';
-      msg.textContent = 'Esta conta não tem permissão para aceder ao painel.';
+      msg.textContent = (profile && profile.role === 'pendente')
+        ? 'A tua conta ainda está pendente. Pede a um Admin para te dar acesso em "Equipa".'
+        : 'Esta conta não tem permissão para aceder ao painel.';
       await supabase.auth.signOut();
       return;
     }

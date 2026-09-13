@@ -287,6 +287,11 @@
         <div class="panel" style="padding:0; overflow-x:auto;" id="teamPanel">
           <table class="mgr-table" id="teamTable"><tr><th>Nome</th><th>Email</th><th>Função</th></tr></table>
         </div>
+
+        <h1 style="margin-top:34px;">Clientes registados</h1><p class="mgr-sub">Todas as contas criadas na loja (loja/conta.html). O Admin pode promover qualquer uma a colaborador.</p>
+        <div class="panel" style="padding:0; overflow-x:auto;" id="customersAccountsPanel">
+          <table class="mgr-table" id="customersAccountsTable"><tr><th>Nome</th><th>Email</th><th>Telefone</th><th></th></tr></table>
+        </div>
       </div>
 
     </div>
@@ -725,12 +730,13 @@
     const tbody = document.getElementById('teamTable');
     if(!supabase || modoDemo){ tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Função</th></tr><tr><td colspan="3" class="empty-state">Sem dados em modo demo.</td></tr>'; return; }
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending:false });
-    const papeis = ['admin','gestor','funcionario','armazem','marketing'];
+    const papeis = ['pendente','admin','gestor','funcionario','armazem','marketing'];
     tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Função</th></tr>';
     (data||[]).forEach(u=>{
       const podeEditar = meuPapel === 'admin';
+      const pendente = u.role === 'pendente';
       tbody.innerHTML += `<tr>
-        <td>${u.full_name}</td><td>${u.email}</td>
+        <td>${u.full_name} ${pendente?'<span class="status-pill preparando" style="margin-left:6px;">Pendente</span>':''}</td><td>${u.email}</td>
         <td>${podeEditar ? `
           <select onchange="mudarPapel('${u.id}', this.value)" style="font-size:12px; padding:4px 8px; border-radius:8px; border:1.5px solid var(--line);">
             ${papeis.map(p=>`<option value="${p}" ${p===u.role?'selected':''}>${p}</option>`).join('')}
@@ -738,12 +744,40 @@
         </td>
       </tr>`;
     });
+    carregarClientesRegistados();
   }
   async function mudarPapel(id, novoPapel){
     if(!confirm(`Mudar a função desta conta para "${novoPapel}"?`)){ carregarEquipa(); return; }
     const { error } = await supabase.from('profiles').update({ role: novoPapel }).eq('id', id);
     if(error){ showToast('Não foi possível alterar (só o Admin pode fazer isto).'); carregarEquipa(); return; }
     showToast('Função atualizada.');
+    carregarEquipa();
+  }
+
+  async function carregarClientesRegistados(){
+    const tbody = document.getElementById('customersAccountsTable');
+    if(!tbody) return;
+    if(!supabase || modoDemo){ tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Telefone</th><th></th></tr><tr><td colspan="4" class="empty-state">Sem dados em modo demo.</td></tr>'; return; }
+    const { data } = await supabase.from('customers').select('*').not('auth_user_id','is',null).order('created_at', { ascending:false });
+    tbody.innerHTML = '<tr><th>Nome</th><th>Email</th><th>Telefone</th><th></th></tr>';
+    if(!data || !data.length){ tbody.innerHTML += `<tr><td colspan="4" class="empty-state">Ainda não há clientes registados.</td></tr>`; return; }
+    const podeEditar = meuPapel === 'admin';
+    data.forEach(c=>{
+      tbody.innerHTML += `<tr>
+        <td>${c.full_name||'—'}</td><td>${c.email||'—'}</td><td>${c.phone||'—'}</td>
+        <td>${podeEditar ? `<button onclick="promoverCliente('${c.auth_user_id}','${(c.full_name||'').replace(/'/g,"&apos;")}','${c.email||''}')" style="font-size:12px; font-weight:700; color:var(--brown-700); background:none; border:none; cursor:pointer;">Promover a colaborador</button>` : '—'}</td>
+      </tr>`;
+    });
+  }
+
+  async function promoverCliente(authUserId, fullName, email){
+    const papel = prompt('Promover para que função? (admin, gestor, funcionario, armazem, marketing)', 'gestor');
+    if(!papel) return;
+    const validos = ['admin','gestor','funcionario','armazem','marketing'];
+    if(!validos.includes(papel)){ showToast('Função inválida.'); return; }
+    const { error } = await supabase.from('profiles').insert({ id: authUserId, full_name: fullName, email: email, role: papel });
+    if(error){ showToast('Não foi possível promover: ' + error.message); return; }
+    showToast('Cliente promovido a ' + papel + '.');
     carregarEquipa();
   }
 
