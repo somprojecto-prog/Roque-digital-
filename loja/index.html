@@ -85,8 +85,10 @@
   main.store{ max-width:1200px; margin:0 auto; padding:26px 22px 50px; }
 
   /* ---------- Hero ---------- */
-  .hero{ position:relative; overflow:hidden; border-radius:24px; margin-bottom:28px; border:1px solid var(--line); min-height:460px; display:flex; align-items:flex-start; background:#0d1424 url('../assets/hero-illustration.webp') center/cover no-repeat; box-shadow:0 24px 60px -22px rgba(0,0,0,0.7); }
-  .hero::before{ content:''; position:absolute; inset:0; background:linear-gradient(100deg, rgba(6,9,17,0.96) 0%, rgba(6,9,17,0.82) 32%, rgba(6,9,17,0.25) 62%, rgba(6,9,17,0.15) 100%); }
+  .hero{ position:relative; overflow:hidden; border-radius:24px; margin-bottom:28px; border:1px solid var(--line); min-height:460px; display:flex; align-items:flex-start; background:#0d1424; box-shadow:0 24px 60px -22px rgba(0,0,0,0.7); }
+  .hero-bg{ position:absolute; inset:0; z-index:0; }
+  .hero-bg img{ width:100%; height:100%; object-fit:cover; }
+  .hero::before{ content:''; position:absolute; inset:0; z-index:1; background:linear-gradient(100deg, rgba(6,9,17,0.96) 0%, rgba(6,9,17,0.82) 32%, rgba(6,9,17,0.25) 62%, rgba(6,9,17,0.15) 100%); }
   .hero-copy{ position:relative; z-index:2; padding:44px 40px 34px; max-width:620px; }
   .hero-badge{ display:inline-flex; align-items:center; gap:8px; padding:7px 16px; border-radius:999px; border:1.5px solid var(--gold); color:var(--gold-light); font-weight:800; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:18px; background:rgba(245,166,35,0.08); }
   .hero-eyebrow{ color:var(--gold-light); font-weight:700; font-size:12.5px; letter-spacing:0.14em; margin-bottom:16px; text-transform:uppercase; display:flex; align-items:center; gap:10px; }
@@ -119,6 +121,7 @@
   .cat-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; padding:20px 8px; text-align:center; transition:.2s; }
   .cat-card:hover{ border-color:var(--gold); transform:translateY(-3px); box-shadow:var(--shadow); }
   .cat-card .emoji{ font-size:25px; margin-bottom:8px; }
+  .cat-card .cat-thumb{ width:44px; height:44px; border-radius:12px; object-fit:cover; margin:0 auto 8px; display:block; }
   .cat-card .label{ font-size:12px; font-weight:700; color:var(--text-soft); }
 
   /* ---------- Carrossel de produtos ---------- */
@@ -232,6 +235,7 @@
 
 <main class="store">
   <section class="hero reveal">
+    <div class="hero-bg"><img class="js-hero-image" src="../assets/hero-illustration.webp" alt=""></div>
     <div class="hero-copy">
       <div class="hero-badge">👑 Roque Digital</div>
       <h1 class="js-hero-titulo">Tecnologia, estilo e <span class="accent">qualidade.</span></h1>
@@ -250,7 +254,7 @@
 
   <section class="reveal">
     <div class="section-head"><h2>Categorias</h2></div>
-    <div class="cat-grid">
+    <div class="cat-grid" id="catGrid">
       <div class="cat-card"><div class="emoji">📱</div><div class="label">Telefones</div></div>
       <div class="cat-card"><div class="emoji">🎧</div><div class="label">Áudio</div></div>
       <div class="cat-card"><div class="emoji">⌚</div><div class="label">Relógios</div></div>
@@ -361,7 +365,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
 
   let supabase = null;
-  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); }
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); }
   catch(e){ console.log("Supabase não ligado — a usar produtos de exemplo."); }
 
   async function carregarProdutos(){
