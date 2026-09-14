@@ -123,6 +123,14 @@ const RD = {
       if(data.logo_url) document.querySelectorAll('.js-site-logo').forEach(el=> el.src = data.logo_url);
       if(data.hero_url) document.querySelectorAll('.js-hero-image').forEach(el=> el.src = data.hero_url);
 
+      // Cores do site (definidas no painel de gestão, em "Conteúdo do site")
+      const raiz = document.documentElement.style;
+      if(data.cor_destaque) raiz.setProperty('--gold', data.cor_destaque);
+      if(data.cor_destaque_clara) raiz.setProperty('--gold-light', data.cor_destaque_clara);
+      if(data.cor_fundo) raiz.setProperty('--bg', data.cor_fundo);
+      if(data.cor_fundo_2) raiz.setProperty('--bg-2', data.cor_fundo_2);
+      if(data.cor_superficie) raiz.setProperty('--surface', data.cor_superficie);
+
       const footerCopy = document.getElementById('footer-copy');
       if(footerCopy){
         const nome = data.nome_site || 'Roque Digital';
@@ -137,6 +145,25 @@ const RD = {
       if(data.redes_instagram) document.querySelectorAll('.js-social-instagram').forEach(el=> el.href = data.redes_instagram);
       if(data.redes_facebook) document.querySelectorAll('.js-social-facebook').forEach(el=> el.href = data.redes_facebook);
     }catch(e){ console.warn('Não foi possível aplicar o conteúdo do site.', e); }
+  },
+
+  // ---------- Categorias da página inicial ----------
+  // Lê a tabela `categories` (a mesma usada no painel de gestão para os
+  // produtos) e, se tiver categorias com imagem, substitui os cartões fixos
+  // da página inicial (#catGrid) pelas categorias reais da loja.
+  async loadHomeCategories(supabaseClient){
+    const grid = document.getElementById('catGrid');
+    if(!grid || !supabaseClient) return;
+    try{
+      const { data, error } = await supabaseClient.from('categories').select('*').order('name');
+      if(error || !data || !data.length) return; // mantém os cartões fixos como reserva
+      grid.innerHTML = data.map(c=>{
+        const imagem = c.image_url
+          ? `<img class="cat-thumb" src="${c.image_url}" alt="${c.name}">`
+          : `<div class="emoji">${c.emoji || '🛍️'}</div>`;
+        return `<a href="#produtos" class="cat-card">${imagem}<div class="label">${c.name}</div></a>`;
+      }).join('');
+    }catch(e){ console.warn('Não foi possível carregar as categorias.', e); }
   }
 };
 
