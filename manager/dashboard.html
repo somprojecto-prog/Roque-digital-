@@ -138,6 +138,7 @@
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Catálogo</div>
         <a data-tab="produtos" onclick="return mgrTab(event,'produtos')"><span class="ic">🛍</span> Produtos</a>
+        <a data-tab="categorias" onclick="return mgrTab(event,'categorias')"><span class="ic">🗂</span> Categorias</a>
         <a data-tab="stock" onclick="return mgrTab(event,'stock')"><span class="ic">📦</span> Inventário</a>
       </div>
       <div class="mgr-nav-group">
@@ -200,6 +201,31 @@
         </div>
       </div>
 
+      <!-- ========== CATEGORIAS ========== -->
+      <div class="mgr-panel" id="mgr-categorias">
+        <h1>Categorias</h1><p class="mgr-sub">Estas categorias aparecem como cartões na página inicial da loja e no menu de produtos. Escolhe uma imagem para cada uma ou apaga as que não precisas.</p>
+        <div class="panel" style="max-width:480px; margin-bottom:18px;">
+          <div class="field" style="margin-bottom:14px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Nome da categoria</label>
+            <input type="text" id="cat-nome" placeholder="Ex: Ténis">
+          </div>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Imagem</label>
+            <div class="image-upload-box" onclick="document.getElementById('cat-img-file').click()">
+              <img id="cat-img-preview" style="display:none;">
+              <span id="cat-img-placeholder">Toque para escolher uma imagem</span>
+            </div>
+            <input type="file" id="cat-img-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'cat-img')">
+            <p class="upload-status" id="cat-img-status"></p>
+          </div>
+          <button class="btn btn-primary" onclick="adicionarCategoria()">+ Adicionar categoria</button>
+          <p id="categoriaStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
+        </div>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="categoriasTable"><tr><th></th><th>Categoria</th><th></th></tr></table>
+        </div>
+      </div>
+
       <!-- ========== INVENTÁRIO ========== -->
       <div class="mgr-panel" id="mgr-stock">
         <h1>Inventário</h1><p class="mgr-sub">Produtos ordenados por stock — os mais críticos aparecem primeiro.</p>
@@ -251,6 +277,13 @@
           <div class="field-row"><label>Morada</label><input id="cf-morada" type="text"></div>
           <div class="field-row"><label>Instagram (link)</label><input id="cf-instagram" type="text"></div>
           <div class="field-row"><label>Facebook (link)</label><input id="cf-facebook" type="text"></div>
+        </div>
+        <div class="panel" style="margin-top:16px;">
+          <h3>Cores do site</h3>
+          <p class="mgr-sub" style="margin-bottom:14px;">Muda a paleta de cores usada em toda a loja (botões, destaques e fundo).</p>
+          <div class="field-row"><label>Cor de destaque</label><input id="cf-cor-destaque" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
+          <div class="field-row"><label>Cor de destaque (clara)</label><input id="cf-cor-destaque-clara" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
+          <div class="field-row"><label>Cor de fundo</label><input id="cf-cor-fundo" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
         </div>
         <button class="btn btn-primary" style="margin-top:16px;" onclick="guardarConteudo()">Guardar alterações</button>
         <p id="conteudoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
@@ -489,6 +522,7 @@
     }
     cacheCategorias = data || [];
     preencherSelectCategorias();
+    renderCategoriasPanel();
   }
   function preencherSelectCategorias(){
     document.getElementById('pf-categoria').innerHTML = cacheCategorias.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
@@ -797,6 +831,9 @@
     document.getElementById('cf-morada').value = data.contacto_morada || '';
     document.getElementById('cf-instagram').value = data.redes_instagram || '';
     document.getElementById('cf-facebook').value = data.redes_facebook || '';
+    document.getElementById('cf-cor-destaque').value = data.cor_destaque || '#F5A623';
+    document.getElementById('cf-cor-destaque-clara').value = data.cor_destaque_clara || '#FFC65C';
+    document.getElementById('cf-cor-fundo').value = data.cor_fundo || '#080B14';
 
     if(data.logo_url){ document.getElementById('img-logo-preview').src = data.logo_url; document.getElementById('img-logo-preview').style.display='block'; document.getElementById('img-logo-placeholder').style.display='none'; }
     if(data.hero_url){ document.getElementById('img-hero-preview').src = data.hero_url; document.getElementById('img-hero-preview').style.display='block'; document.getElementById('img-hero-placeholder').style.display='none'; }
@@ -814,13 +851,57 @@
       contacto_whatsapp: document.getElementById('cf-whatsapp').value.replace(/\D/g,'') || null,
       contacto_morada: document.getElementById('cf-morada').value.trim() || null,
       redes_instagram: document.getElementById('cf-instagram').value.trim() || null,
-      redes_facebook: document.getElementById('cf-facebook').value.trim() || null
+      redes_facebook: document.getElementById('cf-facebook').value.trim() || null,
+      cor_destaque: document.getElementById('cf-cor-destaque').value || null,
+      cor_destaque_clara: document.getElementById('cf-cor-destaque-clara').value || null,
+      cor_fundo: document.getElementById('cf-cor-fundo').value || null
     };
     const { error } = await supabase.from('site_settings').update(payload).eq('id',1);
     const statusEl = document.getElementById('conteudoStatus');
     if(error){ statusEl.style.color = 'var(--danger)'; statusEl.textContent = 'Erro ao guardar: ' + error.message; return; }
     statusEl.style.color = 'var(--success)';
     statusEl.textContent = 'Guardado! As alterações já se aplicam à loja.';
+  }
+
+  /* ================= GESTÃO DE CATEGORIAS (página inicial) ================= */
+  function renderCategoriasPanel(){
+    const tbody = document.getElementById('categoriasTable');
+    if(!tbody) return;
+    let html = '<tr><th></th><th>Categoria</th><th></th></tr>';
+    cacheCategorias.forEach(c=>{
+      const thumb = c.image_url
+        ? `<img src="${c.image_url}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">`
+        : `<div style="width:36px;height:36px;border-radius:8px;background:var(--cream-2);display:flex;align-items:center;justify-content:center;font-size:16px;">${c.emoji||'🛍️'}</div>`;
+      html += `<tr><td>${thumb}</td><td>${c.name}</td><td style="text-align:right;"><button class="btn btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="apagarCategoria('${c.id}')">Apagar</button></td></tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+  async function adicionarCategoria(){
+    const statusEl = document.getElementById('categoriaStatus');
+    const nome = document.getElementById('cat-nome').value.trim();
+    const fileInput = document.getElementById('cat-img-file');
+    const imagemUrl = fileInput.dataset.url || null;
+    if(!nome){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Escreve o nome da categoria.'; return; }
+    if(!supabase || modoDemo){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Liga o Supabase para guardar categorias.'; return; }
+    const { error } = await supabase.from('categories').insert([{ name:nome, image_url:imagemUrl }]);
+    if(error){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Erro: ' + error.message; return; }
+    statusEl.style.color='var(--success)';
+    statusEl.textContent = 'Categoria adicionada!';
+    document.getElementById('cat-nome').value = '';
+    fileInput.value = ''; fileInput.dataset.url = '';
+    document.getElementById('cat-img-preview').style.display='none';
+    document.getElementById('cat-img-placeholder').style.display='block';
+    await carregarCategorias();
+    renderCategoriasPanel();
+  }
+  async function apagarCategoria(id){
+    if(!confirm('Apagar esta categoria? Os produtos que a usam ficam sem categoria.')) return;
+    if(!supabase || modoDemo) return;
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if(error){ showToast('Erro ao apagar: ' + error.message); return; }
+    await carregarCategorias();
+    renderCategoriasPanel();
+    showToast('Categoria apagada.');
   }
 
   verificarSessao();
