@@ -137,7 +137,13 @@
 
   .prod-card{ flex:0 0 auto; width:190px; scroll-snap-align:start; background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; overflow:hidden; transition:.2s; position:relative; }
   .prod-card:hover{ box-shadow:var(--shadow); transform:translateY(-3px); border-color:var(--brown-light); }
-  .prod-img{ height:130px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; }
+  .prod-img{ height:130px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; overflow:hidden; }
+  .prod-img-main, .prod-img-hover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .35s ease; }
+  .prod-img-hover{ opacity:0; }
+  .prod-img:hover .prod-img-hover{ opacity:1; }
+  .prod-img:hover .prod-img-main{ opacity:0; }
+  .prod-img.show-alt .prod-img-hover{ opacity:1; }
+  .prod-img.show-alt .prod-img-main{ opacity:0; }
   .prod-tag{ position:absolute; top:9px; left:9px; background:var(--brown-light); color:var(--text); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; border:1px solid var(--gold); z-index:2; }
   .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text); transition:.2s; z-index:2; }
   .prod-body{ padding:13px 14px 15px; }
@@ -368,18 +374,31 @@
   try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); }
   catch(e){ console.log("Supabase não ligado — a usar produtos de exemplo."); }
 
+  // Monta o miolo de ".prod-img": se houver 2ª foto, empilha as duas para o
+  // efeito de troca ao passar o rato (desktop) ou manter pressionado (touch);
+  // caso contrário mostra só a foto principal (ou o emoji de reserva).
+  function prodImgMarkup(imgMain, imgHover, emoji){
+    if(imgMain && imgHover){
+      return `<img class="prod-img-main" src="${imgMain}"><img class="prod-img-hover" src="${imgHover}">`;
+    }
+    if(imgMain){
+      return `<img class="prod-img-main" src="${imgMain}" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+    return emoji || '📦';
+  }
+
   async function carregarProdutos(){
     const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).limit(10);
     if(error || !data || data.length === 0) return;
     window.__rdProducts = data.map(p => ({
       id:p.id, name:p.name, brand:p.brand, price:Number(p.price), tag:p.tag,
-      image:p.image_url, category:p.category || '', rating:p.rating || null
+      image:p.image_url, imageHover:p.image_url_hover, category:p.category || '', rating:p.rating || null
     }));
     const track = document.getElementById('destaquesTrack');
     track.innerHTML = data.map(p => `
       <div class="prod-card" data-id="${p.id}">
         <div class="prod-img">
-          ${p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦'}
+          ${prodImgMarkup(p.image_url, p.image_url_hover, '📦')}
           ${p.tag ? `<span class="prod-tag">${p.tag}</span>` : ''}
           <div class="prod-fav" onclick="toggleFav(this)">♡</div>
         </div>
@@ -425,6 +444,23 @@
     RD.showToast('Adicionado ao carrinho');
   }
 
+  // Troca de foto do produto: no computador basta passar o rato por cima
+  // (CSS trata disso sozinho); no telemóvel é preciso manter o dedo
+  // pressionado — por isso usamos um temporizador aqui.
+  (function(){
+    let pressTimer = null;
+    function limparTodas(){
+      document.querySelectorAll('.prod-img.show-alt').forEach(b=> b.classList.remove('show-alt'));
+    }
+    document.addEventListener('touchstart', function(e){
+      const box = e.target.closest('.prod-img');
+      if(!box || !box.querySelector('.prod-img-hover')) return;
+      pressTimer = setTimeout(()=> box.classList.add('show-alt'), 350);
+    }, { passive:true });
+    document.addEventListener('touchend', function(){ clearTimeout(pressTimer); limparTodas(); });
+    document.addEventListener('touchcancel', function(){ clearTimeout(pressTimer); limparTodas(); });
+  })();
+
   // Marca os corações já favoritados ao abrir a página
   document.addEventListener('DOMContentLoaded', ()=>{
     document.querySelectorAll('.prod-card[data-id]').forEach(card=>{
@@ -443,7 +479,7 @@
 
   function cartaoResultado(p){
     const emoji = p.emoji || '📦';
-    const imagem = p.image ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">` : emoji;
+    const imagem = prodImgMarkup(p.image, p.imageHover, emoji);
     return `
       <div class="prod-card" data-id="${p.id}">
         <div class="prod-img">
