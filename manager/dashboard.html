@@ -360,6 +360,15 @@
           <input type="file" id="pf-imagem-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'pf-imagem')">
           <p class="upload-status" id="pf-imagem-status"></p>
         </div>
+        <div class="field">
+          <label>2ª foto (aparece ao passar o rato / manter pressionado)</label>
+          <div class="image-upload-box" onclick="document.getElementById('pf-imagem2-file').click()">
+            <img id="pf-imagem2-preview" style="display:none;">
+            <span id="pf-imagem2-placeholder">Opcional — toque para escolher uma imagem</span>
+          </div>
+          <input type="file" id="pf-imagem2-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'pf-imagem2')">
+          <p class="upload-status" id="pf-imagem2-status"></p>
+        </div>
         <label class="toggle-row"><input id="pf-ativo" type="checkbox" checked style="width:auto;"> Produto ativo (visível na loja)</label>
         <button type="submit" class="btn btn-primary" style="width:100%;">Guardar produto</button>
       </form>
@@ -621,6 +630,14 @@
     else{ previewImg.style.display='none'; placeholder.style.display='block'; }
     document.getElementById('pf-imagem-status').textContent = '';
 
+    const fileInput2 = document.getElementById('pf-imagem2-file');
+    fileInput2.dataset.url = p ? (p.image_url_hover||'') : '';
+    const previewImg2 = document.getElementById('pf-imagem2-preview');
+    const placeholder2 = document.getElementById('pf-imagem2-placeholder');
+    if(p && p.image_url_hover){ previewImg2.src = p.image_url_hover; previewImg2.style.display='block'; placeholder2.style.display='none'; }
+    else{ previewImg2.style.display='none'; placeholder2.style.display='block'; }
+    document.getElementById('pf-imagem2-status').textContent = '';
+
     document.getElementById('produtoModal').classList.add('open');
   }
   function fecharModalProduto(){ document.getElementById('produtoModal').classList.remove('open'); }
@@ -637,6 +654,7 @@
       stock: Number(document.getElementById('pf-stock').value) || 0,
       tag: document.getElementById('pf-tag').value.trim() || null,
       image_url: document.getElementById('pf-imagem-file').dataset.url || null,
+      image_url_hover: document.getElementById('pf-imagem2-file').dataset.url || null,
       active: document.getElementById('pf-ativo').checked
     };
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar produtos.'); fecharModalProduto(); return; }
