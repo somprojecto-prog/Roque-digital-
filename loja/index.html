@@ -169,6 +169,19 @@
   .promo-code{ background:rgba(0,0,0,0.35); border:1.5px dashed var(--gold); border-radius:10px; padding:10px 18px; text-align:center; color:var(--gold-light); font-weight:800; font-size:15px; letter-spacing:.05em; }
   .promo-code span{ display:block; font-size:9.5px; color:var(--text-soft); font-weight:700; letter-spacing:.1em; margin-bottom:3px; }
 
+  /* ---------- Destaque em vídeo ---------- */
+  .highlight-section{ display:grid; grid-template-columns:1.3fr 1fr; gap:36px; align-items:center; margin-bottom:40px; }
+  .highlight-video-box{ position:relative; aspect-ratio:16/9; width:100%; overflow:hidden; border-radius:26px; background:#000; box-shadow:0 30px 70px -25px rgba(0,0,0,0.7); border:1px solid var(--line); }
+  .highlight-video-box video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .highlight-video-box::after{ content:''; position:absolute; inset:0; background:linear-gradient(to top, rgba(6,9,17,0.45), transparent 45%); pointer-events:none; }
+  .highlight-sound-btn{ position:absolute; bottom:14px; right:14px; width:34px; height:34px; border-radius:50%; background:rgba(6,9,17,0.55); backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.2); color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; font-size:15px; }
+  .highlight-info h2{ font-size:32px; margin-bottom:14px; color:var(--text); }
+  .highlight-info p{ font-size:14.5px; color:var(--text-soft); line-height:1.7; margin-bottom:18px; }
+  .highlight-info .price{ font-size:19px; color:var(--gold); font-weight:800; }
+  @media (max-width:820px){
+    .highlight-section{ grid-template-columns:1fr; }
+  }
+
   .reveal{ opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease; }
   .reveal.in-view{ opacity:1; transform:translateY(0); }
 
@@ -308,10 +321,17 @@
     <div class="carousel-dots" id="destaquesDots"></div>
   </section>
 
-  <section class="promo-banner reveal">
-    <div class="promo-icon">🎁</div>
-    <div class="promo-text"><p class="section-eyebrow" style="margin-bottom:2px;">Oferta especial</p><h3>10% de desconto</h3><p>na tua primeira encomenda!</p></div>
-    <div class="promo-code"><span>CÓDIGO</span>ROQUE10</div>
+  <section class="highlight-section reveal">
+    <div class="highlight-video-box">
+      <video id="highlightVideo" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" autoplay loop muted playsinline></video>
+      <button class="highlight-sound-btn" id="highlightSoundBtn" onclick="alternarSomDestaque()" aria-label="Ativar som">🔇</button>
+    </div>
+    <div class="highlight-info">
+      <p class="section-eyebrow" style="margin-bottom:2px;">Destaque</p>
+      <h2>iPhone 17 Pro</h2>
+      <p>Titânio, câmara profissional e o chip mais rápido já criado pela Apple. A perfeição, redesenhada.</p>
+      <div class="price">1 450 000 Kz</div>
+    </div>
   </section>
 </main>
 
@@ -423,6 +443,15 @@
   function scrollCarousel(id, amount){
     const track = document.getElementById(id);
     if(track) track.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+
+  function alternarSomDestaque(){
+    const v = document.getElementById('highlightVideo');
+    const btn = document.getElementById('highlightSoundBtn');
+    if(!v) return;
+    v.muted = !v.muted;
+    btn.textContent = v.muted ? '🔇' : '🔊';
+    btn.setAttribute('aria-label', v.muted ? 'Ativar som' : 'Silenciar vídeo');
   }
 
   // Efeito de "superfície curva" no carrossel: os cartões mais perto do
