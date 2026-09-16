@@ -97,6 +97,16 @@
       <div class="pay-opt" data-pay="transferencia" onclick="selecionarPagamento('transferencia')">Transferência bancária</div>
     </div>
 
+    <div id="payInstructions" style="font-size:12.5px; color:var(--text-soft); background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:16px;">
+      Referência Multicaixa Express será enviada por WhatsApp assim que confirmares o pedido.
+    </div>
+
+    <div class="field" id="proofField" style="display:none;">
+      <label>Comprovativo de pagamento (opcional agora, podes enviar depois por WhatsApp)</label>
+      <input type="file" id="ckProof" accept="image/*">
+      <p id="proofStatus" style="font-size:11.5px; color:var(--text-soft); margin-top:6px;"></p>
+    </div>
+
     <button class="btn btn-gold" onclick="finalizarPedido()">Finalizar pedido</button>
   </div>
 
@@ -119,6 +129,15 @@
   function selecionarPagamento(m){
     metodoPagamento = m;
     document.querySelectorAll('.pay-opt').forEach(el=> el.classList.toggle('selected', el.dataset.pay===m));
+    const proofField = document.getElementById('proofField');
+    const instructions = document.getElementById('payInstructions');
+    if(m === 'transferencia'){
+      proofField.style.display = 'block';
+      instructions.textContent = 'IBAN: AO06 0000 0000 0000 0000 0000 0 — Banco de Roque Digital. Envia o comprovativo abaixo ou por WhatsApp.';
+    } else {
+      proofField.style.display = 'none';
+      instructions.textContent = 'Referência Multicaixa Express será enviada por WhatsApp assim que confirmares o pedido.';
+    }
   }
 
   const DELIVERY_FEE = 2000;
@@ -194,6 +213,10 @@
       return;
     }
 
+    const btn = document.querySelector('#checkoutForm .btn-gold');
+    const btnTextoOriginal = btn.textContent;
+    btn.disabled = true; btn.textContent = 'A enviar...';
+
     const cart = RD.getCart();
     const total = RD.cartTotal() + DELIVERY_FEE;
     let orderNumber = 'RD' + Math.floor(1000 + Math.random()*9000);
@@ -201,12 +224,37 @@
     // Se o Supabase estiver ligado, tenta guardar o pedido a sério
     if(supabase){
       try{
-        const { data: customer } = await supabase.from('customers').insert({
-          full_name: nome, phone: telefone, address: `${cidade} — ${morada}`
-        }).select().single();
+        // Se a pessoa tiver sessão iniciada, liga o pedido à conta dela
+        // em vez de criar um cliente novo a cada compra.
+        let customerId = null;
+        const { data: { session } } = await supabase.auth.getSession();
+        if(session){
+          const { data: existente } = await supabase.from('customers').select('id').eq('auth_user_id', session.user.id).single();
+          if(existente) customerId = existente.id;
+        }
+        if(!customerId){
+          const { data: customer } = await supabase.from('customers').insert({
+            full_name: nome, phone: telefone, address: `${cidade} — ${morada}`,
+            auth_user_id: session ? session.user.id : null
+          }).select().single();
+          customerId = customer ? customer.id : null;
+        }
+
+        // Envia o comprovativo de pagamento, se a pessoa escolheu um ficheiro
+        let proofUrl = null;
+        const proofInput = document.getElementById('ckProof');
+        if(metodoPagamento === 'transferencia' && proofInput.files[0]){
+          try{
+            const file = proofInput.files[0];
+            const nomeFicheiro = `comprovativos/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${(file.name.split('.').pop()||'jpg')}`;
+            const { error: upErr } = await supabase.storage.from('imagens').upload(nomeFicheiro, file);
+            if(!upErr){ proofUrl = supabase.storage.from('imagens').getPublicUrl(nomeFicheiro).data.publicUrl; }
+          }catch(eUp){ console.warn('Não foi possível enviar o comprovativo agora.', eUp); }
+        }
 
         const { data: order } = await supabase.from('orders').insert({
-          customer_id: customer ? customer.id : null, status:'novo', total, delivery_fee: DELIVERY_FEE
+          customer_id: customerId, status:'recebido', total, delivery_fee: DELIVERY_FEE,
+          payment_method: metodoPagamento, payment_proof_url: proofUrl
         }).select().single();
 
         if(order){

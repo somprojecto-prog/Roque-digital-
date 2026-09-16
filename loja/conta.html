@@ -339,7 +339,7 @@
       <div class="order-item">
         <div class="num">Pedido #RD${o.order_number}</div>
         <div class="meta">${new Date(o.created_at).toLocaleDateString('pt-PT')} · ${RD.formatKz(o.total)}</div>
-        <span class="status-pill">${o.status}</span>
+        <span class="status-pill">${RD.statusLabel(o.status)}</span>
       </div>
     `).join('');
   }
