@@ -62,6 +62,46 @@ const RD = {
 
   formatKz(n){ return Number(n).toLocaleString('pt-PT') + ' Kz'; },
 
+  // ---------- Conta obrigatória (carrinho / favoritos / avaliações) ----------
+  PENDING_KEY:'rd_pending_action',
+
+  // Guarda a ação que a pessoa queria fazer (ex: adicionar X ao carrinho)
+  // para a repetir sozinha assim que ela iniciar sessão.
+  setPendingAction(action){ try{ sessionStorage.setItem(this.PENDING_KEY, JSON.stringify(action)); }catch(e){} },
+  consumePendingAction(){
+    try{
+      const raw = sessionStorage.getItem(this.PENDING_KEY);
+      sessionStorage.removeItem(this.PENDING_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){ return null; }
+  },
+
+  async isLoggedIn(supabaseClient){
+    if(!supabaseClient) return false;
+    try{
+      const { data:{ session } } = await supabaseClient.auth.getSession();
+      return !!session;
+    }catch(e){ return false; }
+  },
+
+  // Chamar antes de qualquer ação que exija conta (carrinho, favoritos,
+  // avaliações). Se não houver sessão, guarda a ação pendente (opcional)
+  // e manda para a página de conta, que a repete sozinha ao entrar.
+  async requireAccount(supabaseClient, pendingAction){
+    const logado = await this.isLoggedIn(supabaseClient);
+    if(logado) return true;
+    if(pendingAction) this.setPendingAction(pendingAction);
+    this.showToast('Cria uma conta ou entra para continuar');
+    const next = encodeURIComponent(location.pathname.split('/').pop() + location.search);
+    setTimeout(()=>{ location.href = 'conta.html?next=' + next; }, 700);
+    return false;
+  },
+
+  renderStars(rating){
+    const r = Math.round(Number(rating) || 0);
+    return Array.from({length:5}).map((_,i)=> i < r ? '★' : '☆').join('');
+  },
+
   // ---------- Notificação simples ----------
   showToast(msg){
     let el = document.getElementById('global-toast');
