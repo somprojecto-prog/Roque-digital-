@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
+<script src="../assets/supabase.js"></script>
 <script src="../assets/store-common.js"></script>
 <style>
   :root{
@@ -58,6 +59,11 @@
 </main>
 
 <script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
+  let supabase = null;
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
   function render(){
     const favs = RD.getFavs();
     const view = document.getElementById('favView');
@@ -99,9 +105,12 @@
     RD.showToast('Removido dos favoritos');
   }
 
-  function adicionar(id){
+  async function adicionar(id){
     const p = RD.getFavs().find(f=>f.id===id);
-    if(p) RD.addToCart(p, 1);
+    if(!p) return;
+    const ok = await RD.requireAccount(supabase, { type:'add-to-cart', product:p });
+    if(!ok) return;
+    RD.addToCart(p, 1);
     RD.showToast('Adicionado ao carrinho');
   }
 

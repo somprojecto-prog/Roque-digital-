@@ -27,6 +27,17 @@
   .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 26px; border-radius:10px; font-weight:700; font-size:14.5px; transition:.2s; width:100%; }
   .btn-gold{ background:var(--brown-light); color:var(--text); border:1.5px solid var(--gold); }
   .btn-gold:hover{ background:var(--brown); }
+  .btn[disabled]{ opacity:.55; cursor:not-allowed; }
+
+  .btn-google{ background:#fff; color:#1F1F1F; border:1.5px solid var(--line); font-weight:700; }
+  .btn-google:hover{ background:#f4f4f4; }
+  .btn-google svg{ flex-shrink:0; }
+
+  .auth-divider{ display:flex; align-items:center; gap:12px; margin:20px 0; font-size:11.5px; color:var(--text-soft); text-transform:uppercase; letter-spacing:.06em; }
+  .auth-divider::before, .auth-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
+
+  .auth-terms{ font-size:11.5px; color:var(--text-soft); text-align:center; margin-top:14px; line-height:1.5; }
+  .auth-terms a{ color:var(--gold-light); font-weight:700; }
 
   .top-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); padding:16px 20px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:50; }
   .top-header a.back{ font-size:20px; }
@@ -90,24 +101,35 @@
   <!-- ================= NÃO AUTENTICADO ================= -->
   <div id="authView">
     <div class="auth-card">
+      <h2 style="font-size:19px; margin-bottom:4px;">Bem-vindo(a)</h2>
+      <p style="font-size:12.5px; color:var(--text-soft); margin-bottom:20px;">Entra ou cria uma conta para comprar, guardar favoritos e avaliar produtos.</p>
+
+      <button class="btn btn-google" id="googleBtn" onclick="entrarComGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.85.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.98v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.98A9 9 0 0 0 0 9c0 1.45.35 2.83.98 4.05l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.42 0 9 0A9 9 0 0 0 .98 4.95l2.99 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        Continuar com Google
+      </button>
+
+      <div class="auth-divider"><span>ou com email</span></div>
+
       <div class="auth-tabs">
         <div class="auth-tab active" data-tab="login" onclick="mudarAbaAuth('login')">Entrar</div>
         <div class="auth-tab" data-tab="signup" onclick="mudarAbaAuth('signup')">Criar conta</div>
       </div>
 
       <div class="auth-panel active" id="loginPanel">
-        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="oteuemail@exemplo.com"></div>
-        <div class="field"><label>Palavra-passe</label><input type="password" id="loginPassword" placeholder="••••••••"></div>
-        <button class="btn btn-gold" onclick="fazerLogin()">Entrar</button>
+        <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="oteuemail@exemplo.com" autocomplete="email"></div>
+        <div class="field"><label>Palavra-passe</label><input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn btn-gold" id="loginBtn" onclick="fazerLogin()">Entrar</button>
         <div class="auth-msg" id="loginMsg"></div>
       </div>
 
       <div class="auth-panel" id="signupPanel">
-        <div class="field"><label>Nome completo</label><input type="text" id="suName" placeholder="O teu nome"></div>
-        <div class="field"><label>Email</label><input type="email" id="suEmail" placeholder="oteuemail@exemplo.com"></div>
-        <div class="field"><label>Palavra-passe</label><input type="password" id="suPassword" placeholder="Mínimo 6 caracteres"></div>
-        <button class="btn btn-gold" onclick="fazerRegisto()">Criar conta</button>
+        <div class="field"><label>Nome completo</label><input type="text" id="suName" placeholder="O teu nome" autocomplete="name"></div>
+        <div class="field"><label>Email</label><input type="email" id="suEmail" placeholder="oteuemail@exemplo.com" autocomplete="email"></div>
+        <div class="field"><label>Palavra-passe</label><input type="password" id="suPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+        <button class="btn btn-gold" id="signupBtn" onclick="fazerRegisto()">Criar conta</button>
         <div class="auth-msg" id="signupMsg"></div>
+        <p class="auth-terms">Ao criar conta, aceitas os <a href="termos.html">Termos</a> e a <a href="privacidade.html">Política de Privacidade</a>.</p>
       </div>
     </div>
   </div>
@@ -168,13 +190,33 @@
     if(tab === 'favoritos') carregarFavoritos();
   }
 
+  async function entrarComGoogle(){
+    if(!supabase) return;
+    const btn = document.getElementById('googleBtn');
+    btn.disabled = true;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+    if(error){
+      btn.disabled = false;
+      RD.showToast('Não foi possível abrir o Google: ' + error.message);
+    }
+    // Em caso de sucesso o browser é redirecionado para o Google — o resto
+    // acontece quando a pessoa voltar e verificarSessao() correr de novo.
+  }
+
   async function fazerLogin(){
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     const msg = document.getElementById('loginMsg');
+    const btn = document.getElementById('loginBtn');
     if(!supabase){ msg.className='auth-msg error'; msg.textContent='Supabase não está ligado.'; return; }
 
+    btn.disabled = true; btn.textContent = 'A entrar…';
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled = false; btn.textContent = 'Entrar';
+
     if(error){ msg.className='auth-msg error'; msg.textContent='Email ou palavra-passe incorretos.'; return; }
     msg.className='auth-msg ok'; msg.textContent='Sessão iniciada!';
     setTimeout(verificarSessao, 400);
@@ -185,8 +227,11 @@
     const email = document.getElementById('suEmail').value.trim();
     const password = document.getElementById('suPassword').value;
     const msg = document.getElementById('signupMsg');
+    const btn = document.getElementById('signupBtn');
     if(!supabase){ msg.className='auth-msg error'; msg.textContent='Supabase não está ligado.'; return; }
     if(!nome || !email || password.length < 6){ msg.className='auth-msg error'; msg.textContent='Preenche todos os campos (palavra-passe com 6+ caracteres).'; return; }
+
+    btn.disabled = true; btn.textContent = 'A criar conta…';
 
     // Nota: não enviamos "role" nos metadados — assim o trigger do Supabase
     // sabe que esta conta é de um CLIENTE, e não cria uma linha em "profiles"
@@ -194,6 +239,9 @@
     const { data, error } = await supabase.auth.signUp({
       email, password, options:{ data:{ full_name: nome } }
     });
+
+    btn.disabled = false; btn.textContent = 'Criar conta';
+
     if(error){ msg.className='auth-msg error'; msg.textContent = error.message.includes('already') ? 'Este email já tem conta.' : 'Erro: ' + error.message; return; }
 
     if(data.user){
@@ -220,13 +268,34 @@
 
     let { data: customer } = await supabase.from('customers').select('*').eq('auth_user_id', session.user.id).single();
     if(!customer){
+      const meta = session.user.user_metadata || {};
+      const nomeInicial = meta.full_name || meta.name || session.user.email.split('@')[0];
       const { data: novo } = await supabase.from('customers').insert({
-        auth_user_id: session.user.id, full_name: session.user.email.split('@')[0], email: session.user.email
+        auth_user_id: session.user.id, full_name: nomeInicial, email: session.user.email
       }).select().single();
       customer = novo;
     }
     currentCustomer = customer;
     mostrarPerfil();
+    await retomarAcaoPendente();
+  }
+
+  // Se a pessoa foi mandada para cá para iniciar sessão a meio de uma
+  // ação (adicionar ao carrinho, guardar favorito), conclui essa ação
+  // sozinha e devolve-a à página onde estava.
+  async function retomarAcaoPendente(){
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get('next');
+    const pendente = RD.consumePendingAction();
+
+    if(pendente && pendente.product){
+      if(pendente.type === 'add-to-cart') RD.addToCart(pendente.product, 1);
+      if(pendente.type === 'toggle-fav') RD.toggleFavorite(pendente.product);
+    }
+
+    if(next){
+      window.location.href = next;
+    }
   }
 
   function mostrarAuth(){

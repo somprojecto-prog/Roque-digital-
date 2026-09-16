@@ -644,23 +644,36 @@
     requestAnimationFrame(tick);
   })();
 
-  function toggleFav(el){
+  async function toggleFav(el){
     const card = el.closest('.prod-card');
     const id = card ? card.dataset.id : null;
     const product = id ? (DEMO_PRODUCTS.find(p=>p.id===id) || window.__rdProducts?.find(p=>p.id===id)) : null;
-    if(!product){ el.textContent = el.textContent === '♡' ? '❤️' : '♡'; return; }
+    if(!product) return;
+    const ok = await RD.requireAccount(supabase, { type:'toggle-fav', product });
+    if(!ok) return;
     const isFav = RD.toggleFavorite(product);
     el.textContent = isFav ? '❤️' : '♡';
     RD.showToast(isFav ? 'Adicionado aos favoritos' : 'Removido dos favoritos');
   }
 
-  function addToCartFromCard(el){
+  async function addToCartFromCard(el){
     const card = el.closest('.prod-card');
     const id = card ? card.dataset.id : null;
     const product = id ? (DEMO_PRODUCTS.find(p=>p.id===id) || window.__rdProducts?.find(p=>p.id===id)) : null;
-    if(product){ RD.addToCart(product, 1); }
+    if(!product) return;
+    const ok = await RD.requireAccount(supabase, { type:'add-to-cart', product });
+    if(!ok) return;
+    RD.addToCart(product, 1);
     RD.showToast('Adicionado ao carrinho');
   }
+
+  // Toca num cartão de produto (fora do ♡ e do +) para abrir a ficha
+  // completa do produto.
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.prod-fav, .prod-add')) return;
+    const card = e.target.closest('.prod-card[data-id]');
+    if(card) window.location.href = 'produto.html?id=' + encodeURIComponent(card.dataset.id);
+  });
 
   // Troca de foto do produto: no computador basta passar o rato por cima
   // (CSS trata disso sozinho); no telemóvel é preciso manter o dedo

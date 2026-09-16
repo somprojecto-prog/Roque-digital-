@@ -8,6 +8,8 @@
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/supabase.js"></script>
+<script src="../assets/store-common.js"></script>
 <style>
   body{ padding-bottom:78px; }
   .client-header{ background:var(--brown-900); position:sticky; top:0; z-index:100; }
@@ -59,10 +61,23 @@
 
   .reviews-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; }
   .reviews-head h2{ font-size:22px; }
-  .review-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:14px; }
+  .review-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:14px; position:relative; }
   .review-stars{ color:var(--gold); font-size:13.5px; margin-bottom:8px; letter-spacing:2px; }
   .review-text{ font-size:13.5px; color:var(--text); line-height:1.65; margin-bottom:10px; }
   .review-name{ font-size:12px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.04em; }
+  .review-del{ position:absolute; top:16px; right:16px; font-size:11.5px; font-weight:700; color:var(--danger); }
+  .review-empty{ font-size:13px; color:var(--text-soft); margin-bottom:14px; }
+
+  .review-form{ background:var(--cream-2); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:22px; }
+  .review-form textarea{ width:100%; min-height:80px; margin-top:10px; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line); font-family:inherit; font-size:13.5px; resize:vertical; }
+  .star-picker{ display:flex; gap:4px; font-size:24px; cursor:pointer; }
+  .star-picker span{ color:var(--line); }
+  .star-picker span.active{ color:var(--gold); }
+  .review-login-cta{ font-size:13px; color:var(--text-soft); }
+  .review-login-cta a{ color:var(--brown-900); font-weight:700; border-bottom:1.5px solid var(--gold); }
+
+  .not-found{ text-align:center; padding:100px 20px; }
+  .not-found a{ display:inline-block; margin-top:16px; font-weight:700; color:var(--brown-900); border-bottom:1.5px solid var(--gold); }
 
   footer.store-footer{ background:var(--brown-900); color:#C9B8A5; padding:40px 24px 22px; text-align:center; font-size:12.5px; }
 
@@ -84,6 +99,14 @@
 </header>
 
 <main class="product-main">
+  <div id="notFoundView" class="not-found" style="display:none;">
+    <div style="font-size:52px;">🔍</div>
+    <h1 style="font-size:22px; margin-top:14px;">Produto não encontrado</h1>
+    <p style="color:var(--text-soft); margin-top:8px;">Pode ter sido removido ou o link está incorreto.</p>
+    <a href="index.html">← Voltar à loja</a>
+  </div>
+
+  <div id="productContent">
   <div class="product-grid">
     <div class="product-image" id="productImage">📦</div>
     <div>
@@ -119,97 +142,218 @@
         <li>🔒 Pagamento seguro — Multicaixa Express, transferência ou na entrega</li>
         <li>↩️ Trocas e devoluções até 7 dias após a receção</li>
       </ul>
-
-      <div class="p-features">
-        <h3>Características</h3>
-        <ul id="pFeatures"></ul>
-      </div>
     </div>
   </div>
 
   <section>
     <div class="reviews-head"><h2>Avaliações de clientes</h2></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Produto exatamente como descrito, chegou bem embalado e dentro do prazo."</p><div class="review-name">Carlos A.</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Ótimo atendimento, esclareceram todas as minhas dúvidas antes da compra."</p><div class="review-name">Márcia P.</div></div>
-    <div class="review-card"><div class="review-stars">★★★★☆</div><p class="review-text">"Muito bom, só demorou um pouco mais que o esperado na entrega."</p><div class="review-name">Edson T.</div></div>
+    <div id="reviewFormWrap"></div>
+    <div id="reviewsList"><p class="review-empty">A carregar avaliações…</p></div>
   </section>
 
   <section class="related-section">
     <div class="reviews-head"><h2>Produtos relacionados</h2></div>
     <div class="related-grid" id="relatedGrid"></div>
   </section>
+  </div>
 </main>
 
 <footer class="store-footer">© 2026 Roque Digital. Todos os direitos reservados.</footer>
 
 <script>
-  // Base de dados de demonstração — substitui por dados do Supabase quando ligares o backend
-  const PRODUTOS = {
-    "iphone15pro": { name:"iPhone 15 Pro", brand:"Apple", price:850000, oldPrice:null, emoji:"📱", stock:"in", rating:"⭐ 4.8 (126 avaliações)", desc:"O iPhone 15 Pro traz o chip A17 Pro, câmara profissional e acabamento em titânio. Ideal para quem procura desempenho e elegância no dia a dia.", features:["Ecrã 6.1\" Super Retina XDR","Chip A17 Pro","Câmara tripla de 48MP","128GB de armazenamento","Resistente a água e poeira (IP68)"] },
-    "perfume-elan": { name:"Perfume Élan", brand:"Lattafa", price:35000, oldPrice:44000, emoji:"🌸", stock:"low", rating:"⭐ 4.6 (58 avaliações)", desc:"Fragrância marcante e duradoura, com notas amadeiradas e florais. Perfeito para uso diário ou ocasiões especiais.", features:["100ml — Eau de Parfum","Notas amadeiradas e florais","Duração média de 8h","Unissexo"] },
-    "relogio-aurora": { name:"Relógio Aurora", brand:"Casio", price:50000, oldPrice:null, emoji:"⌚", stock:"in", rating:"⭐ 4.9 (94 avaliações)", desc:"Relógio resistente à água, com design clássico e mecanismo de precisão. Combina com qualquer estilo.", features:["Resistente à água até 50m","Bracelete em aço inoxidável","Mecanismo de quartzo","Garantia de 1 ano"] },
-    "airpods-pro": { name:"AirPods Pro", brand:"Apple", price:75000, oldPrice:null, emoji:"🎧", stock:"out", rating:"⭐ 4.7 (203 avaliações)", desc:"Cancelamento ativo de ruído, som espacial e até 6h de autonomia. O par ideal para música e chamadas.", features:["Cancelamento ativo de ruído","Som espacial personalizado","Até 6h de autonomia (30h com estojo)","Resistente a suor e água (IPX4)"] }
-  };
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
+  let supabase = null;
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
 
   const params = new URLSearchParams(window.location.search);
-  const id = params.get('id') || 'iphone15pro';
-  const p = PRODUTOS[id] || PRODUTOS['iphone15pro'];
+  const productId = params.get('id');
 
-  document.getElementById('productImage').textContent = p.emoji;
-  document.getElementById('pBrand').textContent = p.brand;
-  document.getElementById('pName').textContent = p.name;
-  document.getElementById('pRating').textContent = p.rating;
-  document.getElementById('pPrice').textContent = p.price.toLocaleString('pt-PT') + ' Kz';
-  document.getElementById('pDesc').textContent = p.desc;
-  document.title = p.name + " — Roque Digital";
+  let produtoAtual = null;   // linha da tabela products
+  let currentCustomer = null; // linha da tabela customers (se tiver sessão)
+  let souAdminOuGestor = false;
+  let estrelaEscolhida = 0;
 
-  document.getElementById('pFeatures').innerHTML = (p.features || []).map(f=>`<li>${f}</li>`).join('');
-
-  const relatedGrid = document.getElementById('relatedGrid');
-  const relacionados = Object.entries(PRODUTOS).filter(([pid])=> pid !== id).slice(0,4);
-  relatedGrid.innerHTML = relacionados.map(([pid, rp])=>`
-    <a class="related-card" href="produto.html?id=${pid}">
-      <div class="related-img">${rp.emoji}</div>
-      <div class="related-body">
-        <div class="related-name">${rp.name}</div>
-        <div class="related-price">${rp.price.toLocaleString('pt-PT')} Kz</div>
-      </div>
-    </a>
-  `).join('');
-
-  if(p.oldPrice){
-    const oldEl = document.getElementById('pOld');
-    oldEl.textContent = p.oldPrice.toLocaleString('pt-PT') + ' Kz';
-    oldEl.style.display = 'inline';
+  function mostrarNaoEncontrado(){
+    document.getElementById('productContent').style.display = 'none';
+    document.getElementById('notFoundView').style.display = 'block';
   }
 
-  const stockEl = document.getElementById('pStock');
-  const addCartBtn = document.getElementById('addCartBtn');
-  if(p.stock === 'in'){ stockEl.textContent = 'Em stock'; }
-  else if(p.stock === 'low'){ stockEl.textContent = 'Últimas unidades'; stockEl.classList.add('low'); }
-  else { stockEl.textContent = 'Esgotado'; stockEl.classList.add('out'); addCartBtn.disabled = true; addCartBtn.style.opacity = '.5'; addCartBtn.style.cursor = 'not-allowed'; }
+  function produtoParaCarrinho(p){
+    return { id:p.id, name:p.name, brand:p.brand, price:Number(p.price), image:p.image_url, imageHover:p.image_url_hover, category:p.category || '' };
+  }
 
-  // Quantidade
+  async function carregarProduto(){
+    if(!supabase || !productId){ mostrarNaoEncontrado(); return; }
+
+    const { data: p, error } = await supabase.from('products').select('*').eq('id', productId).single();
+    if(error || !p){ mostrarNaoEncontrado(); return; }
+    produtoAtual = p;
+
+    document.title = p.name + " — Roque Digital";
+    document.getElementById('pBrand').textContent = p.brand || '';
+    document.getElementById('pName').textContent = p.name;
+    document.getElementById('pPrice').textContent = Number(p.price).toLocaleString('pt-PT') + ' Kz';
+    document.getElementById('pDesc').textContent = p.description || '';
+
+    const imgBox = document.getElementById('productImage');
+    imgBox.innerHTML = p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦';
+
+    const stockEl = document.getElementById('pStock');
+    const addCartBtn = document.getElementById('addCartBtn');
+    const semStock = typeof p.stock === 'number' && p.stock <= 0;
+    if(semStock){
+      stockEl.textContent = 'Esgotado'; stockEl.classList.add('out');
+      addCartBtn.disabled = true; addCartBtn.style.opacity = '.5'; addCartBtn.style.cursor = 'not-allowed';
+    } else {
+      stockEl.textContent = 'Em stock';
+    }
+
+    carregarRelacionados(p);
+    carregarAvaliacoes();
+  }
+
+  async function carregarRelacionados(p){
+    const { data } = await supabase.from('products').select('*').eq('active', true).neq('id', p.id).limit(4);
+    const grid = document.getElementById('relatedGrid');
+    if(!data || !data.length){ grid.innerHTML = ''; return; }
+    grid.innerHTML = data.map(rp => `
+      <a class="related-card" href="produto.html?id=${rp.id}">
+        <div class="related-img">${rp.image_url ? `<img src="${rp.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦'}</div>
+        <div class="related-body">
+          <div class="related-name">${rp.name}</div>
+          <div class="related-price">${Number(rp.price).toLocaleString('pt-PT')} Kz</div>
+        </div>
+      </a>
+    `).join('');
+  }
+
+  // ---------- Quem está a ver a página (para saber o que pode fazer) ----------
+  async function carregarSessao(){
+    if(!supabase) return;
+    const { data:{ session } } = await supabase.auth.getSession();
+    if(!session) return;
+
+    const { data: customer } = await supabase.from('customers').select('*').eq('auth_user_id', session.user.id).single();
+    currentCustomer = customer || null;
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
+    souAdminOuGestor = !!(profile && ['admin','gestor'].includes(profile.role));
+  }
+
+  // ---------- Avaliações ----------
+  async function carregarAvaliacoes(){
+    await carregarSessao();
+    renderFormAvaliacao();
+
+    const { data, error } = await supabase
+      .from('product_reviews')
+      .select('id, rating, comment, created_at, customer_id, customers(full_name)')
+      .eq('product_id', produtoAtual.id)
+      .order('created_at', { ascending:false });
+
+    const list = document.getElementById('reviewsList');
+    if(error || !data || data.length === 0){
+      list.innerHTML = '<p class="review-empty">Ainda não há avaliações — sê a primeira pessoa a avaliar este produto.</p>';
+      document.getElementById('pRating').textContent = '';
+      return;
+    }
+
+    const media = data.reduce((s,r)=> s + r.rating, 0) / data.length;
+    document.getElementById('pRating').textContent = `${RD.renderStars(media)} (${data.length})`;
+
+    list.innerHTML = data.map(r => {
+      const podeApagar = souAdminOuGestor || (currentCustomer && r.customer_id === currentCustomer.id);
+      return `
+        <div class="review-card">
+          ${podeApagar ? `<span class="review-del" onclick="apagarAvaliacao('${r.id}')">Apagar</span>` : ''}
+          <div class="review-stars">${RD.renderStars(r.rating)}</div>
+          ${r.comment ? `<p class="review-text">${r.comment}</p>` : ''}
+          <div class="review-name">${(r.customers && r.customers.full_name) || 'Cliente'} · ${new Date(r.created_at).toLocaleDateString('pt-PT')}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderFormAvaliacao(){
+    const wrap = document.getElementById('reviewFormWrap');
+    if(!currentCustomer){
+      wrap.innerHTML = `<p class="review-login-cta">
+        <a href="conta.html?next=${encodeURIComponent('produto.html?id=' + productId)}">Inicia sessão</a> para avaliares este produto.
+      </p>`;
+      return;
+    }
+    wrap.innerHTML = `
+      <div class="review-form">
+        <div class="star-picker" id="starPicker">
+          ${[1,2,3,4,5].map(n=>`<span data-n="${n}" onclick="escolherEstrela(${n})">★</span>`).join('')}
+        </div>
+        <textarea id="reviewComment" placeholder="Conta a tua experiência com este produto (opcional)"></textarea>
+        <button class="btn btn-gold" style="margin-top:12px;" onclick="enviarAvaliacao()">Publicar avaliação</button>
+      </div>`;
+  }
+
+  function escolherEstrela(n){
+    estrelaEscolhida = n;
+    document.querySelectorAll('#starPicker span').forEach(s=> s.classList.toggle('active', Number(s.dataset.n) <= n));
+  }
+
+  async function enviarAvaliacao(){
+    if(!currentCustomer || !produtoAtual) return;
+    if(estrelaEscolhida < 1){ RD.showToast('Escolhe pelo menos 1 estrela'); return; }
+    const comment = document.getElementById('reviewComment').value.trim();
+
+    const { error } = await supabase.from('product_reviews').upsert({
+      product_id: produtoAtual.id,
+      customer_id: currentCustomer.id,
+      rating: estrelaEscolhida,
+      comment
+    }, { onConflict: 'product_id,customer_id' });
+
+    if(error){ RD.showToast('Erro ao publicar: ' + error.message); return; }
+    RD.showToast('Avaliação publicada!');
+    estrelaEscolhida = 0;
+    carregarAvaliacoes();
+  }
+
+  async function apagarAvaliacao(id){
+    const { error } = await supabase.from('product_reviews').delete().eq('id', id);
+    if(error){ RD.showToast('Erro ao apagar: ' + error.message); return; }
+    RD.showToast('Avaliação apagada');
+    carregarAvaliacoes();
+  }
+
+  // ---------- Quantidade ----------
   let qty = 1;
   const qtyValue = document.getElementById('qtyValue');
   document.getElementById('qtyMinus').addEventListener('click', ()=>{ if(qty>1){ qty--; qtyValue.textContent = qty; } });
   document.getElementById('qtyPlus').addEventListener('click', ()=>{ qty++; qtyValue.textContent = qty; });
 
-  // Adicionar ao carrinho (estado local desta página — liga ao Supabase/carrinho partilhado quando o backend estiver pronto)
+  // ---------- Carrinho / favoritos (exige conta) ----------
   const toast = document.getElementById('pToast');
-  addCartBtn.addEventListener('click', ()=>{
-    if(p.stock === 'out') return;
-    toast.textContent = `✓ ${qty}× ${p.name} adicionado ao carrinho`;
+  const addCartBtn = document.getElementById('addCartBtn');
+  addCartBtn.addEventListener('click', async ()=>{
+    if(!produtoAtual) return;
+    const produto = produtoParaCarrinho(produtoAtual);
+    const ok = await RD.requireAccount(supabase, { type:'add-to-cart', product: produto });
+    if(!ok) return;
+    RD.addToCart(produto, qty);
+    toast.textContent = `✓ ${qty}× ${produtoAtual.name} adicionado ao carrinho`;
     setTimeout(()=>{ toast.textContent=''; }, 3000);
   });
 
-  // Favoritos
   const favBtn = document.getElementById('addFavBtn');
-  let isFav = false;
-  favBtn.addEventListener('click', ()=>{
-    isFav = !isFav;
+  favBtn.addEventListener('click', async ()=>{
+    if(!produtoAtual) return;
+    const produto = produtoParaCarrinho(produtoAtual);
+    const ok = await RD.requireAccount(supabase, { type:'toggle-fav', product: produto });
+    if(!ok) return;
+    const isFav = RD.toggleFavorite(produto);
     favBtn.classList.toggle('active', isFav);
     favBtn.textContent = isFav ? '♥ Guardado nos favoritos' : '♡ Guardar nos favoritos';
+  });
+
+  carregarProduto().then(()=>{
+    if(produtoAtual) favBtn.classList.toggle('active', RD.isFavorite(produtoAtual.id));
   });
 </script>
 
