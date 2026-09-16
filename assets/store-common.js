@@ -207,6 +207,19 @@ const RD = {
         return `<a href="#produtos" class="cat-card">${imagem}<div class="label">${c.name}</div></a>`;
       }).join('');
     }catch(e){ console.warn('Não foi possível carregar as categorias.', e); }
+  },
+
+  // ---------- Estados da encomenda (usado na loja e no painel) ----------
+  ORDER_STATUSES: ['recebido','confirmado','em_preparacao','enviado','entregue','cancelado'],
+  statusLabel(status){
+    const nomes = {
+      recebido:'Recebido', confirmado:'Pagamento confirmado', em_preparacao:'Em preparação',
+      enviado:'Enviado', entregue:'Entregue', cancelado:'Cancelado'
+    };
+    return nomes[status] || status;
+  },
+  statusStep(status){
+    return this.ORDER_STATUSES.indexOf(status);
   }
 };
 
