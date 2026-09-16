@@ -74,8 +74,9 @@
   .brand-text{ min-width:0; }
   .brand-name{ font-family:'Fraunces',serif; font-weight:700; font-size:20px; color:var(--text); line-height:1.15; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .brand-tag{ font-family:'Inter',sans-serif; font-weight:700; font-size:11px; letter-spacing:0.12em; color:var(--gold); margin-top:2px; text-transform:uppercase; }
-  .header-user{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text); font-size:19px; flex-shrink:0; transition:.2s; }
+  .header-user{ min-width:42px; height:38px; padding:0 14px; border-radius:999px; display:flex; align-items:center; justify-content:center; gap:6px; color:var(--text); font-size:13.5px; font-weight:700; flex-shrink:0; transition:.2s; border:1.5px solid var(--gold); }
   .header-user:hover{ background:var(--surface); }
+  .header-user.is-logged-in{ width:42px; height:42px; padding:0; border-radius:50%; font-size:19px; border:none; }
 
   main.store{ max-width:1200px; margin:0 auto; padding:26px 22px 50px; }
 
@@ -257,7 +258,7 @@
         <div class="brand-tag js-site-slogan">Loja Online</div>
       </div>
     </div>
-    <a href="conta.html" class="header-user">👤</a>
+    <a href="conta.html" class="header-user" id="headerAccountLink">Entrar</a>
   </div>
 </header>
 
@@ -265,7 +266,6 @@
   <section class="hero reveal">
     <div class="hero-bg"><img class="js-hero-image" src="../assets/hero-illustration.webp" alt=""></div>
     <div class="hero-copy">
-      <div class="hero-badge">👑 Roque Digital</div>
       <h1 class="js-hero-titulo">Tecnologia, estilo e <span class="accent">qualidade.</span></h1>
       <p class="js-hero-descricao">Os melhores produtos de tecnologia, acessórios, perfumes e muito mais, tudo em um só lugar. Na Roque Digital, você encontra o que precisa, com entrega rápida e total segurança.</p>
       <a href="#produtos" class="btn btn-gold">🛒 Ver Produtos →</a>
@@ -513,8 +513,16 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
 
   let supabase = null;
-  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); }
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); atualizarLinkConta(); }
   catch(e){ console.log("Supabase não ligado — a usar produtos de exemplo."); }
+
+  async function atualizarLinkConta(){
+    const link = document.getElementById('headerAccountLink');
+    if(!link || !supabase) return;
+    const logado = await RD.isLoggedIn(supabase);
+    if(logado){ link.textContent = '👤'; link.classList.add('is-logged-in'); }
+    else { link.textContent = 'Entrar'; link.classList.remove('is-logged-in'); }
+  }
 
   // Monta o miolo de ".prod-img": se houver 2ª foto, empilha as duas para o
   // efeito de troca ao passar o rato (desktop) ou manter pressionado (touch);

@@ -263,7 +263,7 @@
     document.getElementById('pRating').textContent = `${RD.renderStars(media)} (${data.length})`;
 
     list.innerHTML = data.map(r => {
-      const podeApagar = souAdminOuGestor || (currentCustomer && r.customer_id === currentCustomer.id);
+      const podeApagar = souAdminOuGestor;
       return `
         <div class="review-card">
           ${podeApagar ? `<span class="review-del" onclick="apagarAvaliacao('${r.id}')">Apagar</span>` : ''}
