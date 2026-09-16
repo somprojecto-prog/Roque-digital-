@@ -91,9 +91,12 @@ const RD = {
     const logado = await this.isLoggedIn(supabaseClient);
     if(logado) return true;
     if(pendingAction) this.setPendingAction(pendingAction);
-    this.showToast('Cria uma conta ou entra para continuar');
+    const aviso = pendingAction?.type === 'toggle-fav'
+      ? 'Precisas de criar conta (ou entrar) para guardar favoritos'
+      : 'Precisas de criar conta (ou entrar) para adicionar ao carrinho';
+    this.showToast(aviso, 1800);
     const next = encodeURIComponent(location.pathname.split('/').pop() + location.search);
-    setTimeout(()=>{ location.href = 'conta.html?next=' + next; }, 700);
+    setTimeout(()=>{ location.href = 'conta.html?next=' + next; }, 1600);
     return false;
   },
 
@@ -103,13 +106,13 @@ const RD = {
   },
 
   // ---------- Notificação simples ----------
-  showToast(msg){
+  showToast(msg, duracaoMs){
     let el = document.getElementById('global-toast');
     if(!el){ el = document.createElement('div'); el.id='global-toast'; el.className='toast'; document.body.appendChild(el); }
     el.textContent = msg;
     el.classList.add('show');
     clearTimeout(window.__rdToastTimer);
-    window.__rdToastTimer = setTimeout(()=> el.classList.remove('show'), 2200);
+    window.__rdToastTimer = setTimeout(()=> el.classList.remove('show'), duracaoMs || 2200);
   },
 
   // ---------- Pesquisa inteligente ----------
