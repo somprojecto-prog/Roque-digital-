@@ -53,9 +53,9 @@
   table.mgr-table td{ padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:middle; }
   table.mgr-table tr:last-child td{ border-bottom:none; }
   .status-pill{ font-size:11px; font-weight:700; padding:3px 10px; border-radius:999px; display:inline-block; white-space:nowrap; }
-  .status-pill.novo{ background:#E6EEFB; color:#2b5fc2; }
-  .status-pill.pago{ background:#E4F3E9; color:var(--success); }
-  .status-pill.preparando{ background:#FBF1E0; color:var(--brown-700); }
+  .status-pill.recebido{ background:#E6EEFB; color:#2b5fc2; }
+  .status-pill.confirmado{ background:#E4F3E9; color:var(--success); }
+  .status-pill.em_preparacao{ background:#FBF1E0; color:var(--brown-700); }
   .status-pill.enviado{ background:#EFE6FB; color:#7b3fc2; }
   .status-pill.entregue{ background:#E4F3E9; color:var(--success); }
   .status-pill.cancelado{ background:#FBE6E2; color:var(--danger); }
@@ -241,9 +241,9 @@
           <input type="text" id="encBusca" placeholder="Pesquisar por nome ou nº do pedido..." oninput="renderEncomendas()" style="flex:1; min-width:200px;">
           <select id="encFiltroEstado" onchange="renderEncomendas()">
             <option value="">Todos os estados</option>
-            <option value="novo">Novo</option>
-            <option value="pago">Pago</option>
-            <option value="preparando">Preparando</option>
+            <option value="recebido">Recebido</option>
+            <option value="confirmado">Confirmado</option>
+            <option value="em_preparacao">Em preparação</option>
             <option value="enviado">Enviado</option>
             <option value="entregue">Entregue</option>
             <option value="cancelado">Cancelado</option>
@@ -701,7 +701,8 @@
     });
     tbody.innerHTML = '<tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Estado</th><th></th></tr>';
     if(!lista.length){ tbody.innerHTML += `<tr><td colspan="6" class="empty-state">Sem encomendas.</td></tr>`; return; }
-    const ESTADOS = ['novo','pago','preparando','enviado','entregue','cancelado'];
+    const ESTADOS = ['recebido','confirmado','em_preparacao','enviado','entregue','cancelado'];
+    const NOMES = { recebido:'Recebido', confirmado:'Confirmado', em_preparacao:'Em preparação', enviado:'Enviado', entregue:'Entregue', cancelado:'Cancelado' };
     lista.forEach(o=>{
       tbody.innerHTML += `<tr>
         <td>#RD${o.order_number}</td>
@@ -709,7 +710,7 @@
         <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
         <td>${formatKz(o.total)}</td>
         <td><select onchange="mudarEstadoEncomenda('${o.id}', this.value)" style="font-size:12px; padding:4px 8px; border-radius:8px; border:1.5px solid var(--line);">
-          ${ESTADOS.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+          ${ESTADOS.map(s=>`<option value="${s}" ${s===o.status?'selected':''}>${NOMES[s]}</option>`).join('')}
         </select></td>
         <td class="row-actions"><button onclick='verDetalheEncomenda(${JSON.stringify(o).replace(/'/g,"&apos;")})'>Ver detalhes</button></td>
       </tr>`;
@@ -723,18 +724,41 @@
     showToast('Estado atualizado.');
     atualizarDashboard();
   }
-  function verDetalheEncomenda(o){
+  async function verDetalheEncomenda(o){
+    const NOMES = { recebido:'Recebido', confirmado:'Confirmado', em_preparacao:'Em preparação', enviado:'Enviado', entregue:'Entregue', cancelado:'Cancelado' };
     const itens = (o.order_items||[]).map(i=>`
       <p style="font-size:13.5px; margin-bottom:6px;">${i.quantity}x ${i.products?i.products.name:'Produto'} — ${formatKz(i.unit_price*i.quantity)}</p>
     `).join('') || '<p class="empty-state">Sem itens registados.</p>';
+
+    const metodo = o.payment_method === 'transferencia' ? 'Transferência bancária' : 'Multicaixa Express';
+    const comprovativo = o.payment_proof_url
+      ? `<a href="${o.payment_proof_url}" target="_blank" style="color:var(--brown-700); font-weight:700; font-size:12.5px;">📎 Ver comprovativo enviado</a>`
+      : `<span style="font-size:12.5px; color:var(--text-soft);">Sem comprovativo enviado</span>`;
+
     document.getElementById('encomendaModalBody').innerHTML = `
       <p style="font-weight:700; margin-bottom:4px;">${o.customers?o.customers.full_name:'Cliente'}</p>
       <p style="color:var(--text-soft); font-size:13px; margin-bottom:14px;">📞 ${o.customers?o.customers.phone||'—':'—'}<br>📍 ${o.customers?o.customers.address||'—':'—'}</p>
       ${itens}
       <p style="font-size:13px; color:var(--text-soft); margin-top:10px;">Taxa de entrega: ${formatKz(o.delivery_fee||0)}</p>
       <p style="font-weight:700; margin-top:6px; color:var(--brown-900);">Total: ${formatKz(o.total)}</p>
+      <p style="font-size:12.5px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">💳 Método: ${metodo}</p>
+      <p style="margin-top:6px;">${comprovativo}</p>
+      <div id="historicoEncomenda" style="margin-top:16px; padding-top:14px; border-top:1px solid var(--line);">
+        <p style="font-size:12px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">HISTÓRICO</p>
+        <p class="empty-state" style="padding:6px 0;">A carregar...</p>
+      </div>
     `;
     document.getElementById('encomendaModal').classList.add('open');
+
+    if(supabase && !modoDemo){
+      const { data: historico } = await supabase.from('order_status_history').select('*').eq('order_id', o.id).order('changed_at', { ascending:true });
+      const historicoEl = document.getElementById('historicoEncomenda');
+      if(historico && historico.length){
+        historicoEl.innerHTML = `<p style="font-size:12px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">HISTÓRICO</p>` + historico.map(h=>`
+          <p style="font-size:12.5px; margin-bottom:5px;">• ${NOMES[h.status]||h.status} — ${new Date(h.changed_at).toLocaleString('pt-PT')}</p>
+        `).join('');
+      }
+    }
   }
 
   /* ================= DASHBOARD (KPIs) ================= */
@@ -759,7 +783,8 @@
     tbody.innerHTML = '<tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr>';
     if(!ultimas.length){ tbody.innerHTML += `<tr><td colspan="4" class="empty-state">Ainda não há encomendas.</td></tr>`; return; }
     ultimas.forEach(o=>{
-      tbody.innerHTML += `<tr><td>#RD${o.order_number}</td><td>${o.customers?o.customers.full_name:'—'}</td><td>${formatKz(o.total)}</td><td><span class="status-pill ${o.status}">${o.status}</span></td></tr>`;
+      const nomesEstado = { recebido:'Recebido', confirmado:'Confirmado', em_preparacao:'Em preparação', enviado:'Enviado', entregue:'Entregue', cancelado:'Cancelado' };
+      tbody.innerHTML += `<tr><td>#RD${o.order_number}</td><td>${o.customers?o.customers.full_name:'—'}</td><td>${formatKz(o.total)}</td><td><span class="status-pill ${o.status}">${nomesEstado[o.status]||o.status}</span></td></tr>`;
     });
   }
 
