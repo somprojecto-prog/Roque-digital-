@@ -51,5 +51,18 @@ O carrinho e os favoritos usam `localStorage` (guardados no aparelho); a conta d
 ## Nota técnica: biblioteca do Supabase local
 A biblioteca do Supabase (`assets/supabase.js`) está guardada dentro do próprio projeto, em vez de vir de um CDN externo (jsDelivr/unpkg). Isto evita falhas de "Liga o Supabase primeiro" ou "Indisponível" causadas por redes móveis, operadoras ou bloqueadores que impeçam o carregamento de scripts externos — o ficheiro carrega sempre do mesmo sítio que o resto do site.
 
+## Conta obrigatória para comprar, favoritos e avaliações
+- Corre `supabase/customer-accounts-and-reviews.sql` no SQL Editor do Supabase (cria/garante `customers`, `orders` e a nova tabela `product_reviews`, com RLS)
+- Adicionar ao carrinho, guardar nos favoritos e avaliar um produto agora **exigem sessão iniciada**; se a pessoa não tiver conta, é enviada para `conta.html`, e a ação (ex: "adicionar ao carrinho") conclui-se sozinha assim que ela entra
+- Qualquer cliente com conta pode comentar e avaliar (1–5 estrelas) um produto uma vez; pode editar a sua própria avaliação depois. Só o Admin ou o Gestor (painel `manager/`) pode apagar a avaliação de outra pessoa — o próprio cliente também pode apagar a sua
+- `loja/produto.html` deixou de usar produtos de exemplo fixos: agora lê o produto real do Supabase pelo `?id=` (o mesmo `id` usado nos cartões da loja) e mostra "Produto não encontrado" se o id não existir
+- Os cartões de produto na página inicial agora abrem `produto.html?id=...` ao serem tocados (fora do ♡ e do +)
+
+### Ativar "Continuar com Google"
+Isto configura-se no painel do Supabase, não no código:
+1. Na Google Cloud Console, cria um **OAuth Client ID** (tipo "Web application") e adiciona como *Authorized redirect URI*: `https://ijbkwdtooypmgngtuwpy.supabase.co/auth/v1/callback`
+2. No Supabase: **Authentication → Providers → Google** → ativa e cola o Client ID e o Client Secret
+3. Em **Authentication → URL Configuration**, adiciona o URL do teu site (`https://<utilizador>.github.io/Roque-digital-/loja/conta.html`) a **Redirect URLs**, para o Supabase aceitar devolver a pessoa para lá depois do login com Google
+
 ## Importante — separação Cliente / Gestor
 O painel de gestor **não tem nenhum link a partir da loja do cliente**. É uma pasta e um conjunto de páginas totalmente separadas, protegidas por login (Supabase Auth). Só quem tiver conta com função `admin` ou `gestor` consegue entrar no dashboard.
