@@ -22,7 +22,9 @@
 
   main.product-main{ max-width:1100px; margin:0 auto; padding:44px 24px 90px; }
   .product-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:48px; margin-bottom:64px; }
-  .product-image{ background:var(--cream-2); border-radius:24px; border:1px solid var(--line); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; }
+  .product-image{ background:var(--cream-2); border-radius:24px; border:1px solid var(--line); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; overflow:hidden; cursor:zoom-in; }
+  .product-image img{ transition:transform .35s ease; }
+  .product-image:hover img{ transform:scale(1.12); }
   .p-brand{ font-size:13px; color:var(--text-soft); font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
   .p-name{ font-size:30px; margin-bottom:12px; }
   .p-meta-row{ display:flex; align-items:center; gap:16px; margin-bottom:20px; }
@@ -41,6 +43,19 @@
   .p-toast{ font-size:12.5px; color:var(--success); font-weight:700; height:18px; margin-bottom:10px; }
   .p-specs{ margin-top:26px; border-top:1px solid var(--line); padding-top:20px; }
   .p-specs li{ font-size:13px; color:var(--text-soft); line-height:2; }
+  .p-features{ margin-top:20px; border-top:1px solid var(--line); padding-top:20px; }
+  .p-features h3{ font-size:15px; margin-bottom:10px; color:var(--brown-900); }
+  .p-features li{ font-size:13px; color:var(--text-soft); line-height:1.9; list-style:disc; margin-left:18px; }
+
+  .related-section{ margin-top:56px; }
+  .related-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .related-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; overflow:hidden; transition:.2s; }
+  .related-card:hover{ box-shadow:0 14px 30px -14px rgba(0,0,0,0.25); transform:translateY(-2px); }
+  .related-img{ height:120px; background:var(--cream-2); display:flex; align-items:center; justify-content:center; font-size:38px; }
+  .related-body{ padding:12px 14px 16px; }
+  .related-name{ font-size:13px; font-weight:700; color:var(--brown-900); margin-bottom:3px; }
+  .related-price{ font-size:12.5px; color:var(--brown-900); font-weight:700; }
+  @media (max-width:700px){ .related-grid{ grid-template-columns:repeat(2,1fr); } }
 
   .reviews-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; }
   .reviews-head h2{ font-size:22px; }
@@ -104,6 +119,11 @@
         <li>🔒 Pagamento seguro — Multicaixa Express, transferência ou na entrega</li>
         <li>↩️ Trocas e devoluções até 7 dias após a receção</li>
       </ul>
+
+      <div class="p-features">
+        <h3>Características</h3>
+        <ul id="pFeatures"></ul>
+      </div>
     </div>
   </div>
 
@@ -113,6 +133,11 @@
     <div class="review-card"><div class="review-stars">★★★★★</div><p class="review-text">"Ótimo atendimento, esclareceram todas as minhas dúvidas antes da compra."</p><div class="review-name">Márcia P.</div></div>
     <div class="review-card"><div class="review-stars">★★★★☆</div><p class="review-text">"Muito bom, só demorou um pouco mais que o esperado na entrega."</p><div class="review-name">Edson T.</div></div>
   </section>
+
+  <section class="related-section">
+    <div class="reviews-head"><h2>Produtos relacionados</h2></div>
+    <div class="related-grid" id="relatedGrid"></div>
+  </section>
 </main>
 
 <footer class="store-footer">© 2026 Roque Digital. Todos os direitos reservados.</footer>
@@ -120,10 +145,10 @@
 <script>
   // Base de dados de demonstração — substitui por dados do Supabase quando ligares o backend
   const PRODUTOS = {
-    "iphone15pro": { name:"iPhone 15 Pro", brand:"Apple", price:850000, oldPrice:null, emoji:"📱", stock:"in", rating:"⭐ 4.8 (126 avaliações)", desc:"O iPhone 15 Pro traz o chip A17 Pro, câmara profissional e acabamento em titânio. Ideal para quem procura desempenho e elegância no dia a dia." },
-    "perfume-elan": { name:"Perfume Élan", brand:"Lattafa", price:35000, oldPrice:44000, emoji:"🌸", stock:"low", rating:"⭐ 4.6 (58 avaliações)", desc:"Fragrância marcante e duradoura, com notas amadeiradas e florais. Perfeito para uso diário ou ocasiões especiais." },
-    "relogio-aurora": { name:"Relógio Aurora", brand:"Casio", price:50000, oldPrice:null, emoji:"⌚", stock:"in", rating:"⭐ 4.9 (94 avaliações)", desc:"Relógio resistente à água, com design clássico e mecanismo de precisão. Combina com qualquer estilo." },
-    "airpods-pro": { name:"AirPods Pro", brand:"Apple", price:75000, oldPrice:null, emoji:"🎧", stock:"out", rating:"⭐ 4.7 (203 avaliações)", desc:"Cancelamento ativo de ruído, som espacial e até 6h de autonomia. O par ideal para música e chamadas." }
+    "iphone15pro": { name:"iPhone 15 Pro", brand:"Apple", price:850000, oldPrice:null, emoji:"📱", stock:"in", rating:"⭐ 4.8 (126 avaliações)", desc:"O iPhone 15 Pro traz o chip A17 Pro, câmara profissional e acabamento em titânio. Ideal para quem procura desempenho e elegância no dia a dia.", features:["Ecrã 6.1\" Super Retina XDR","Chip A17 Pro","Câmara tripla de 48MP","128GB de armazenamento","Resistente a água e poeira (IP68)"] },
+    "perfume-elan": { name:"Perfume Élan", brand:"Lattafa", price:35000, oldPrice:44000, emoji:"🌸", stock:"low", rating:"⭐ 4.6 (58 avaliações)", desc:"Fragrância marcante e duradoura, com notas amadeiradas e florais. Perfeito para uso diário ou ocasiões especiais.", features:["100ml — Eau de Parfum","Notas amadeiradas e florais","Duração média de 8h","Unissexo"] },
+    "relogio-aurora": { name:"Relógio Aurora", brand:"Casio", price:50000, oldPrice:null, emoji:"⌚", stock:"in", rating:"⭐ 4.9 (94 avaliações)", desc:"Relógio resistente à água, com design clássico e mecanismo de precisão. Combina com qualquer estilo.", features:["Resistente à água até 50m","Bracelete em aço inoxidável","Mecanismo de quartzo","Garantia de 1 ano"] },
+    "airpods-pro": { name:"AirPods Pro", brand:"Apple", price:75000, oldPrice:null, emoji:"🎧", stock:"out", rating:"⭐ 4.7 (203 avaliações)", desc:"Cancelamento ativo de ruído, som espacial e até 6h de autonomia. O par ideal para música e chamadas.", features:["Cancelamento ativo de ruído","Som espacial personalizado","Até 6h de autonomia (30h com estojo)","Resistente a suor e água (IPX4)"] }
   };
 
   const params = new URLSearchParams(window.location.search);
@@ -137,6 +162,20 @@
   document.getElementById('pPrice').textContent = p.price.toLocaleString('pt-PT') + ' Kz';
   document.getElementById('pDesc').textContent = p.desc;
   document.title = p.name + " — Roque Digital";
+
+  document.getElementById('pFeatures').innerHTML = (p.features || []).map(f=>`<li>${f}</li>`).join('');
+
+  const relatedGrid = document.getElementById('relatedGrid');
+  const relacionados = Object.entries(PRODUTOS).filter(([pid])=> pid !== id).slice(0,4);
+  relatedGrid.innerHTML = relacionados.map(([pid, rp])=>`
+    <a class="related-card" href="produto.html?id=${pid}">
+      <div class="related-img">${rp.emoji}</div>
+      <div class="related-body">
+        <div class="related-name">${rp.name}</div>
+        <div class="related-price">${rp.price.toLocaleString('pt-PT')} Kz</div>
+      </div>
+    </a>
+  `).join('');
 
   if(p.oldPrice){
     const oldEl = document.getElementById('pOld');

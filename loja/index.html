@@ -182,11 +182,36 @@
     .highlight-section{ grid-template-columns:1fr; }
   }
 
+  /* ---------- Informação de entrega ---------- */
+  .shipping-info{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:40px; }
+  .shipping-item{ display:flex; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  .shipping-item .fi-ic{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; background:rgba(245,166,35,0.14); font-size:18px; flex-shrink:0; }
+  .shipping-item h5{ font-size:14px; margin-bottom:5px; color:var(--gold-light); }
+  .shipping-item p{ font-size:12.5px; color:var(--text-soft); line-height:1.5; margin:0; }
+  @media (max-width:820px){
+    .shipping-info{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- Depoimentos ---------- */
+  .testimonials{ margin-bottom:40px; }
+  .testimonial-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .testimonial-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; }
+  .t-stars{ font-size:13px; margin-bottom:10px; letter-spacing:1px; }
+  .testimonial-card p{ font-size:13px; color:var(--text-soft); line-height:1.6; margin-bottom:14px; font-style:italic; }
+  .t-author{ font-size:12px; font-weight:700; color:var(--gold-light); }
+  @media (max-width:820px){
+    .testimonial-grid{ grid-template-columns:1fr; }
+  }
+
   .reveal{ opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease; }
   .reveal.in-view{ opacity:1; transform:translateY(0); }
 
   /* ---------- Rodapé ---------- */
   footer.store-footer{ background:var(--brown-deep); color:var(--text-soft); padding:40px 22px 30px; border-top:1.5px solid var(--gold); text-align:center; }
+  .trust-row{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 22px; font-size:12px; color:var(--text-soft); margin-bottom:22px; padding-bottom:22px; border-bottom:1px solid var(--line); max-width:900px; margin-left:auto; margin-right:auto; }
+  .footer-links{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 22px; margin-bottom:20px; font-size:12.5px; }
+  .footer-links a{ color:var(--text-soft); transition:.2s; }
+  .footer-links a:hover{ color:var(--gold-light); }
   .social-row{ display:flex; justify-content:center; gap:12px; margin:14px 0 18px; }
   .social-icon{ width:38px; height:38px; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--text-soft); transition:.2s; }
   .social-icon:hover{ color:var(--gold-light); border-color:var(--gold); }
@@ -209,6 +234,8 @@
   .search-box{ max-width:600px; margin:0 auto 20px; position:relative; }
   .search-box input{ width:100%; padding:16px 50px 16px 20px; border-radius:14px; border:1.5px solid var(--gold); background:var(--surface); color:var(--text); font-size:16px; }
   .search-box input:focus{ outline:none; }
+  .search-sort{ max-width:600px; margin:0 auto 14px; display:flex; align-items:center; justify-content:flex-end; gap:8px; font-size:12.5px; color:var(--text-soft); }
+  .search-sort select{ background:var(--surface); color:var(--text); border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:12.5px; }
   .search-results{ max-width:600px; margin:0 auto; max-height:calc(100vh - 180px); overflow-y:auto; }
   .search-results-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
   .search-hint{ color:var(--text-soft); font-size:12.5px; margin-bottom:12px; text-align:center; }
@@ -321,6 +348,96 @@
     <div class="carousel-dots" id="destaquesDots"></div>
   </section>
 
+  <section class="carousel-wrap reveal">
+    <div class="section-head">
+      <div><p class="section-eyebrow">Populares</p><h2>🏆 Mais vendidos</h2></div>
+      <a href="#">Ver tudo →</a>
+    </div>
+    <div class="carousel-inner">
+      <button class="carousel-arrow left" onclick="scrollCarousel('vendidosTrack',-220)">‹</button>
+      <button class="carousel-arrow right" onclick="scrollCarousel('vendidosTrack',220)">›</button>
+      <div class="carousel-track" id="vendidosTrack">
+        <div class="prod-card" data-id="airpods-pro">
+          <div class="prod-img">🎧<span class="prod-tag">MAIS VENDIDO</span><div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">AirPods Pro</div><div class="prod-brand">Apple · ⭐ 4.7</div>
+            <div class="prod-price-row"><span class="prod-price">75.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+        <div class="prod-card" data-id="iphone15pro">
+          <div class="prod-img">📱<div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">iPhone 15 Pro</div><div class="prod-brand">Apple · ⭐ 4.8</div>
+            <div class="prod-price-row"><span class="prod-price">850.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+        <div class="prod-card" data-id="relogio-aurora">
+          <div class="prod-img">⌚<div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">Relógio Aurora</div><div class="prod-brand">Casio · ⭐ 4.9</div>
+            <div class="prod-price-row"><span class="prod-price">50.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+        <div class="prod-card" data-id="perfume-elan">
+          <div class="prod-img">🌸<div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">Perfume Élan</div><div class="prod-brand">Lattafa · ⭐ 4.6</div>
+            <div class="prod-price-row"><span class="prod-price">35.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-dots" id="vendidosDots"></div>
+  </section>
+
+  <section class="carousel-wrap reveal">
+    <div class="section-head">
+      <div><p class="section-eyebrow">Acabaram de chegar</p><h2>✨ Novidades</h2></div>
+      <a href="#">Ver tudo →</a>
+    </div>
+    <div class="carousel-inner">
+      <button class="carousel-arrow left" onclick="scrollCarousel('novidadesTrack',-220)">‹</button>
+      <button class="carousel-arrow right" onclick="scrollCarousel('novidadesTrack',220)">›</button>
+      <div class="carousel-track" id="novidadesTrack">
+        <div class="prod-card" data-id="camisa-slim">
+          <div class="prod-img">👕<span class="prod-tag">NOVO</span><div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">Camisa Slim</div><div class="prod-brand">Zara · ⭐ 4.5</div>
+            <div class="prod-price-row"><span class="prod-price">18.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+        <div class="prod-card" data-id="perfume-elan">
+          <div class="prod-img">🌸<span class="prod-tag">NOVO</span><div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">Perfume Élan</div><div class="prod-brand">Lattafa · ⭐ 4.6</div>
+            <div class="prod-price-row"><span class="prod-price">35.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+        <div class="prod-card" data-id="iphone15pro">
+          <div class="prod-img">📱<span class="prod-tag">NOVO</span><div class="prod-fav" onclick="toggleFav(this)">♡</div></div>
+          <div class="prod-body"><div class="prod-name">iPhone 15 Pro</div><div class="prod-brand">Apple · ⭐ 4.8</div>
+            <div class="prod-price-row"><span class="prod-price">850.000 Kz</span><div class="prod-add" onclick="addToCartFromCard(this)">+</div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="carousel-dots" id="novidadesDots"></div>
+  </section>
+
+  <section class="shipping-info reveal">
+    <div class="shipping-item"><span class="fi-ic">🚚</span><div><h5>Entrega</h5><p>Fazemos entregas em Luanda e arredores, e enviamos para o resto do país através de agências parceiras.</p></div></div>
+    <div class="shipping-item"><span class="fi-ic">⏱️</span><div><h5>Prazo</h5><p>1 a 2 dias úteis em Luanda. 3 a 7 dias úteis para outras províncias, dependendo da localidade.</p></div></div>
+    <div class="shipping-item"><span class="fi-ic">💰</span><div><h5>Preço</h5><p>Taxa de entrega calculada no carrinho, antes de finalizares a compra — sem surpresas.</p></div></div>
+  </section>
+
+  <section class="testimonials reveal">
+    <div class="section-head"><div><p class="section-eyebrow">Depoimentos</p><h2>⭐ O que dizem os nossos clientes</h2></div></div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <p>"Comprei um perfume e chegou muito bem embalado, dentro do prazo. Vou voltar a comprar com certeza."</p>
+        <div class="t-author">— Beatriz S., Luanda</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <p>"Atendimento pelo WhatsApp foi rápido e simpático. O telefone que comprei é original, sem dúvida."</p>
+        <div class="t-author">— Nelson M., Talatona</div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">⭐⭐⭐⭐⭐</div>
+        <p>"Preços justos e entrega mais rápida do que esperava. Recomendo a todos os meus amigos."</p>
+        <div class="t-author">— Cátia F., Viana</div>
+      </div>
+    </div>
+  </section>
+
   <section class="highlight-section reveal">
     <div class="highlight-video-box">
       <video id="highlightVideo" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" autoplay loop muted playsinline></video>
@@ -336,6 +453,20 @@
 </main>
 
 <footer class="store-footer">
+  <div class="trust-row">
+    <span>🔒 Compra segura</span>
+    <span>🚚 Entrega disponível</span>
+    <span>💬 Atendimento pelo WhatsApp</span>
+    <span>↩️ Política de troca</span>
+  </div>
+  <div class="footer-links">
+    <a href="sobre.html">Sobre nós</a>
+    <a href="contactos.html">Contactos</a>
+    <a href="entregas.html">Entregas</a>
+    <a href="trocas.html">Trocas e devoluções</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+  </div>
   <p class="footer-eyebrow">Redes sociais</p>
   <div class="social-row">
     <a href="https://instagram.com/" target="_blank" rel="noopener" class="social-icon js-social-instagram" aria-label="Instagram">
@@ -379,6 +510,14 @@
     <input type="text" id="searchInput" placeholder="O que estás à procura?" autofocus>
     <span class="search-close" onclick="fecharPesquisa()">✕</span>
   </div>
+  <div class="search-sort" id="searchSortWrap" style="display:none;">
+    <label for="searchSort">Ordenar por</label>
+    <select id="searchSort" onchange="reordenarPesquisa()">
+      <option value="relevancia">Relevância</option>
+      <option value="menor-preco">Menor preço</option>
+      <option value="maior-preco">Maior preço</option>
+    </select>
+  </div>
   <div class="search-results" id="searchResults"></div>
 </div>
 
@@ -406,15 +545,8 @@
     return emoji || '📦';
   }
 
-  async function carregarProdutos(){
-    const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).limit(10);
-    if(error || !data || data.length === 0) return;
-    window.__rdProducts = data.map(p => ({
-      id:p.id, name:p.name, brand:p.brand, price:Number(p.price), tag:p.tag,
-      image:p.image_url, imageHover:p.image_url_hover, category:p.category || '', rating:p.rating || null
-    }));
-    const track = document.getElementById('destaquesTrack');
-    track.innerHTML = data.map(p => `
+  function montarCardProduto(p){
+    return `
       <div class="prod-card" data-id="${p.id}">
         <div class="prod-img">
           ${prodImgMarkup(p.image_url, p.image_url_hover, '📦')}
@@ -429,9 +561,51 @@
             <div class="prod-add" onclick="addToCartFromCard(this)">+</div>
           </div>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+  }
+
+  // Junta os produtos carregados de qualquer carrossel a uma lista única,
+  // para que o "+" (carrinho) e o "♡" (favoritos) funcionem em todos eles,
+  // não só nos "Destaques".
+  function registarProdutos(data){
+    window.__rdProducts = window.__rdProducts || [];
+    data.forEach(p=>{
+      if(window.__rdProducts.some(x=>x.id===p.id)) return;
+      window.__rdProducts.push({
+        id:p.id, name:p.name, brand:p.brand, price:Number(p.price), tag:p.tag,
+        image:p.image_url, imageHover:p.image_url_hover, category:p.category || '', rating:p.rating || null
+      });
+    });
+  }
+
+  async function carregarProdutos(){
+    const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).range(0,9);
+    if(error || !data || data.length === 0) return;
+    registarProdutos(data);
+    document.getElementById('destaquesTrack').innerHTML = data.map(montarCardProduto).join('');
     renderDots('destaquesTrack','destaquesDots', data.length);
+
+    // "Mais vendidos" e "Novidades" reaproveitam a mesma tabela de produtos.
+    // Se ainda não tiveres a coluna "vendas", cai automaticamente para a
+    // data de criação, para nunca ficar vazio.
+    carregarCarrossel('vendidosTrack', 'vendidosDots', 'vendas', false);
+    carregarCarrossel('novidadesTrack', 'novidadesDots', 'created_at', false, 10, 19);
+  }
+
+  async function carregarCarrossel(trackId, dotsId, ordenarPor, ascendente, deInicio, ateFim){
+    const track = document.getElementById(trackId);
+    if(!track) return;
+    let query = supabase.from('products').select('*').eq('active', true).order(ordenarPor, { ascending: ascendente });
+    query = (deInicio !== undefined) ? query.range(deInicio, ateFim) : query.range(0,9);
+    let { data, error } = await query;
+    if(error){
+      // A coluna pedida (ex: "vendas") pode não existir ainda — usa a data como reserva.
+      ({ data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).range(0,9));
+    }
+    if(error || !data || data.length === 0) return;
+    registarProdutos(data);
+    track.innerHTML = data.map(montarCardProduto).join('');
+    renderDots(trackId, dotsId, data.length);
   }
 
   function renderDots(trackId, dotsId, count){
@@ -558,28 +732,51 @@
       </div>`;
   }
 
-  document.getElementById('searchInput').addEventListener('input', function(e){
-    const q = e.target.value;
-    const resultsEl = document.getElementById('searchResults');
-    if(!q.trim()){ resultsEl.innerHTML = ''; return; }
+  let __ultimaPesquisa = { termo:'', exact:[], suggestions:[] };
 
-    const { exact, suggestions } = RD.searchProducts(q, todosOsProdutos());
+  function ordenarLista(lista){
+    const modo = document.getElementById('searchSort').value;
+    const copia = lista.slice();
+    if(modo === 'menor-preco') copia.sort((a,b)=> a.price - b.price);
+    else if(modo === 'maior-preco') copia.sort((a,b)=> b.price - a.price);
+    return copia;
+  }
+
+  function renderizarResultadosPesquisa(){
+    const resultsEl = document.getElementById('searchResults');
+    const sortWrap = document.getElementById('searchSortWrap');
+    const { termo, exact, suggestions } = __ultimaPesquisa;
+    if(!termo.trim()){ resultsEl.innerHTML = ''; sortWrap.style.display = 'none'; return; }
 
     if(exact.length){
-      resultsEl.innerHTML = `<div class="search-results-grid">${exact.map(cartaoResultado).join('')}</div>`;
+      sortWrap.style.display = 'flex';
+      resultsEl.innerHTML = `<div class="search-results-grid">${ordenarLista(exact).map(cartaoResultado).join('')}</div>`;
     } else if(suggestions.length){
+      sortWrap.style.display = 'flex';
       resultsEl.innerHTML = `
-        <p class="search-hint">Não encontrámos <strong>"${q}"</strong>, mas talvez gostes destes:</p>
-        <div class="search-results-grid">${suggestions.map(cartaoResultado).join('')}</div>`;
+        <p class="search-hint">Não encontrámos <strong>"${termo}"</strong>, mas talvez gostes destes:</p>
+        <div class="search-results-grid">${ordenarLista(suggestions).map(cartaoResultado).join('')}</div>`;
     } else {
-      resultsEl.innerHTML = `<p class="search-empty">Sem resultados para "${q}". Tenta outra palavra.</p>`;
+      sortWrap.style.display = 'none';
+      resultsEl.innerHTML = `<p class="search-empty">Sem resultados para "${termo}". Tenta outra palavra.</p>`;
     }
+  }
+
+  function reordenarPesquisa(){ renderizarResultadosPesquisa(); }
+
+  document.getElementById('searchInput').addEventListener('input', function(e){
+    const q = e.target.value;
+    const { exact, suggestions } = RD.searchProducts(q, todosOsProdutos());
+    __ultimaPesquisa = { termo:q, exact, suggestions };
+    renderizarResultadosPesquisa();
   });
   function abrirPesquisa(e){ e.preventDefault(); document.getElementById('searchOverlay').classList.add('open'); document.getElementById('searchInput').focus(); return false; }
   function fecharPesquisa(){
     document.getElementById('searchOverlay').classList.remove('open');
     document.getElementById('searchInput').value = '';
     document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchSortWrap').style.display = 'none';
+    __ultimaPesquisa = { termo:'', exact:[], suggestions:[] };
   }
 
   // Navegação inferior
