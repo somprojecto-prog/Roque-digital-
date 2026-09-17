@@ -64,5 +64,11 @@ Isto configura-se no painel do Supabase, não no código:
 2. No Supabase: **Authentication → Providers → Google** → ativa e cola o Client ID e o Client Secret
 3. Em **Authentication → URL Configuration**, adiciona o URL do teu site (`https://<utilizador>.github.io/Roque-digital-/loja/conta.html`) a **Redirect URLs**, para o Supabase aceitar devolver a pessoa para lá depois do login com Google
 
+## Categorias clicáveis e barras da home editáveis
+- Corre `supabase/home-sections-and-categories.sql` no SQL Editor (cria `home_sections` e `home_section_products`, com RLS)
+- Tocar numa categoria na página inicial agora abre `loja/categoria.html?id=...`, com todos os produtos dessa categoria
+- Cada uma das 3 barras da home (Destaques, Mais vendidos, Novidades) tem "Ver tudo →" a abrir `loja/secao.html?slug=...` com a lista completa
+- No painel de gestão, novo separador **Início**: dá para mudar o nome de cada barra e escolher à mão quais produtos aparecem nela (adicionar/remover). Sem produtos escolhidos, a barra continua a preencher-se sozinha como antes
+
 ## Importante — separação Cliente / Gestor
 O painel de gestor **não tem nenhum link a partir da loja do cliente**. É uma pasta e um conjunto de páginas totalmente separadas, protegidas por login (Supabase Auth). Só quem tiver conta com função `admin` ou `gestor` consegue entrar no dashboard.
