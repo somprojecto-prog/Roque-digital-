@@ -9,7 +9,15 @@
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/supabase.js"></script>
 <style>
-  body{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, var(--brown-700), var(--brown-900) 65%); padding:20px; }
+  /* ---------- Paleta igual à da loja (azul-marinho + dourado) ---------- */
+  :root{
+    --brown-900:#0D1220;
+    --brown-800:#141B30;
+    --brown-700:#1A2338;
+    --gold:#F5A623;
+    --gold-light:#FFC65C;
+  }
+  body{ min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%, var(--brown-700), #080B14 65%); padding:20px; }
   .auth-box{ width:100%; max-width:420px; background:var(--white); border-radius:20px; padding:38px 34px; box-shadow:0 30px 60px -20px rgba(0,0,0,0.5); }
   .auth-logo{ width:64px; height:64px; border-radius:50%; overflow:hidden; margin:0 auto 18px; border:3px solid var(--gold); }
   .auth-logo img{ width:100%; height:100%; object-fit:cover; }
