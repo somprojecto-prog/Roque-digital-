@@ -310,8 +310,8 @@
 
   <section id="produtos" class="carousel-wrap reveal">
     <div class="section-head">
-      <div><p class="section-eyebrow">Destaques</p><h2>🔥 Produtos em destaque</h2></div>
-      <a href="#">Ver tudo →</a>
+      <div><p class="section-eyebrow" id="secEyebrow-destaques">Destaques</p><h2 id="secTitle-destaques">🔥 Produtos em destaque</h2></div>
+      <a href="secao.html?slug=destaques">Ver tudo →</a>
     </div>
     <div class="carousel-inner">
       <button class="carousel-arrow left" onclick="scrollCarousel('destaquesTrack',-220)">‹</button>
@@ -349,8 +349,8 @@
 
   <section class="carousel-wrap reveal">
     <div class="section-head">
-      <div><p class="section-eyebrow">Populares</p><h2>🏆 Mais vendidos</h2></div>
-      <a href="#">Ver tudo →</a>
+      <div><p class="section-eyebrow" id="secEyebrow-vendidos">Populares</p><h2 id="secTitle-vendidos">🏆 Mais vendidos</h2></div>
+      <a href="secao.html?slug=vendidos">Ver tudo →</a>
     </div>
     <div class="carousel-inner">
       <button class="carousel-arrow left" onclick="scrollCarousel('vendidosTrack',-220)">‹</button>
@@ -383,8 +383,8 @@
 
   <section class="carousel-wrap reveal">
     <div class="section-head">
-      <div><p class="section-eyebrow">Acabaram de chegar</p><h2>✨ Novidades</h2></div>
-      <a href="#">Ver tudo →</a>
+      <div><p class="section-eyebrow" id="secEyebrow-novidades">Acabaram de chegar</p><h2 id="secTitle-novidades">✨ Novidades</h2></div>
+      <a href="secao.html?slug=novidades">Ver tudo →</a>
     </div>
     <div class="carousel-inner">
       <button class="carousel-arrow left" onclick="scrollCarousel('novidadesTrack',-220)">‹</button>
@@ -580,22 +580,41 @@
   }
 
   async function carregarProdutos(){
-    const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).range(0,9);
-    if(error || !data || data.length === 0) return;
-    registarProdutos(data);
-    document.getElementById('destaquesTrack').innerHTML = data.map(montarCardProduto).join('');
-    renderDots('destaquesTrack','destaquesDots', data.length);
+    RD.applyHomeSectionTitles(supabase);
+
+    const curadoDestaques = await RD.getCuratedSectionProducts(supabase, 'destaques', 10);
+    if(curadoDestaques){
+      registarProdutos(curadoDestaques);
+      document.getElementById('destaquesTrack').innerHTML = curadoDestaques.map(montarCardProduto).join('');
+      renderDots('destaquesTrack','destaquesDots', curadoDestaques.length);
+    } else {
+      const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).range(0,9);
+      if(!error && data && data.length){
+        registarProdutos(data);
+        document.getElementById('destaquesTrack').innerHTML = data.map(montarCardProduto).join('');
+        renderDots('destaquesTrack','destaquesDots', data.length);
+      }
+    }
 
     // "Mais vendidos" e "Novidades" reaproveitam a mesma tabela de produtos.
     // Se ainda não tiveres a coluna "vendas", cai automaticamente para a
     // data de criação, para nunca ficar vazio.
-    carregarCarrossel('vendidosTrack', 'vendidosDots', 'vendas', false);
-    carregarCarrossel('novidadesTrack', 'novidadesDots', 'created_at', false, 10, 19);
+    carregarCarrossel('vendidos', 'vendidosTrack', 'vendidosDots', 'vendas', false);
+    carregarCarrossel('novidades', 'novidadesTrack', 'novidadesDots', 'created_at', false, 10, 19);
   }
 
-  async function carregarCarrossel(trackId, dotsId, ordenarPor, ascendente, deInicio, ateFim){
+  async function carregarCarrossel(slug, trackId, dotsId, ordenarPor, ascendente, deInicio, ateFim){
     const track = document.getElementById(trackId);
     if(!track) return;
+
+    const curado = await RD.getCuratedSectionProducts(supabase, slug, 10);
+    if(curado){
+      registarProdutos(curado);
+      track.innerHTML = curado.map(montarCardProduto).join('');
+      renderDots(trackId, dotsId, curado.length);
+      return;
+    }
+
     let query = supabase.from('products').select('*').eq('active', true).order(ordenarPor, { ascending: ascendente });
     query = (deInicio !== undefined) ? query.range(deInicio, ateFim) : query.range(0,9);
     let { data, error } = await query;
