@@ -162,6 +162,7 @@
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Conteúdo da loja</div>
+        <a data-tab="vitrine" onclick="return mgrTab(event,'vitrine')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></span> Início</a>
         <a data-tab="conteudo" onclick="return mgrTab(event,'conteudo')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 0 1 4 4L7 21l-4 1 1-4Z"/></svg></span> Textos do site</a>
         <a data-tab="imagens" onclick="return mgrTab(event,'imagens')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5.5-5.5L5 21"/></svg></span> Imagens</a>
       </div>
@@ -213,6 +214,13 @@
         <div class="panel" style="padding:0; overflow-x:auto;">
           <table class="mgr-table" id="produtosTable"><tr><th></th><th>Produto</th><th>Categoria</th><th>Stock</th><th>Preço</th><th>Estado</th><th></th></tr></table>
         </div>
+      </div>
+
+      <!-- ========== INÍCIO (barras da página inicial) ========== -->
+      <div class="mgr-panel" id="mgr-vitrine">
+        <h1>Página inicial</h1>
+        <p class="mgr-sub">Muda o nome de cada barra e escolhe à mão os produtos que aparecem nela. Se não escolheres nenhum produto, a barra continua a preencher-se sozinha (mais recentes / mais vendidos).</p>
+        <div id="vitrineSecoes"></div>
       </div>
 
       <!-- ========== CATEGORIAS ========== -->
@@ -475,11 +483,93 @@
 
   function carregarTudo(){
     carregarCategorias().then(()=>{
-      carregarProdutos();
+      carregarProdutos().then(()=> carregarVitrine());
     });
     carregarEncomendas();
     carregarEquipa();
     carregarConteudo();
+  }
+
+  /* ================= INÍCIO (barras da página inicial) ================= */
+  let vitrineEstado = {};
+  const VITRINE_NOMES = { destaques:'🔥 Destaques', vendidos:'🏆 Mais vendidos', novidades:'✨ Novidades' };
+
+  async function carregarVitrine(){
+    if(!supabase || modoDemo){
+      document.getElementById('vitrineSecoes').innerHTML = '<p class="mgr-sub">Liga o Supabase para editar as barras da página inicial.</p>';
+      return;
+    }
+    const { data: secoes } = await supabase.from('home_sections').select('*');
+    const { data: itens } = await supabase.from('home_section_products')
+      .select('section_slug, position, products(id, name)').order('position');
+
+    vitrineEstado = {};
+    Object.keys(VITRINE_NOMES).forEach(slug=>{ vitrineEstado[slug] = { title:'', produtos:[] }; });
+    (secoes||[]).forEach(s=>{ if(vitrineEstado[s.slug]) vitrineEstado[s.slug].title = s.title; });
+    (itens||[]).forEach(it=>{
+      if(vitrineEstado[it.section_slug] && it.products) vitrineEstado[it.section_slug].produtos.push(it.products);
+    });
+    renderVitrinePanel();
+  }
+
+  function renderVitrinePanel(){
+    const wrap = document.getElementById('vitrineSecoes');
+    wrap.innerHTML = Object.keys(VITRINE_NOMES).map(slug=>{
+      const s = vitrineEstado[slug] || { title:'', produtos:[] };
+      const opcoes = cacheProdutos.filter(p=> !s.produtos.some(sp=>sp.id===p.id))
+        .map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+      const lista = s.produtos.length
+        ? s.produtos.map(p=>`<li style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line); font-size:13.5px;">${p.name} <span style="cursor:pointer; color:var(--danger); font-weight:700;" onclick="removerDaVitrine('${slug}','${p.id}')">✕</span></li>`).join('')
+        : '<li style="padding:8px 0; color:var(--text-soft); font-size:13px;">Nenhum escolhido — a barra preenche-se sozinha</li>';
+      return `
+        <div class="panel" style="margin-bottom:18px; max-width:560px;">
+          <h3 style="margin-bottom:14px;">${VITRINE_NOMES[slug]}</h3>
+          <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Nome da barra (aparece na loja)</label>
+          <input type="text" id="vt-title-${slug}" value="${s.title||''}" style="margin-bottom:16px;">
+          <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Produtos desta barra</label>
+          <ul id="vt-list-${slug}" style="list-style:none; padding:0; margin-bottom:12px;">${lista}</ul>
+          <div style="display:flex; gap:8px; margin-bottom:16px;">
+            <select id="vt-add-${slug}" style="flex:1;"><option value="">Escolher produto para adicionar…</option>${opcoes}</select>
+            <button class="btn btn-gold" onclick="adicionarNaVitrine('${slug}')">+ Adicionar</button>
+          </div>
+          <button class="btn btn-gold" onclick="guardarVitrine('${slug}')">Guardar barra</button>
+          <p class="upload-status" id="vt-status-${slug}"></p>
+        </div>`;
+    }).join('');
+  }
+
+  function adicionarNaVitrine(slug){
+    const sel = document.getElementById('vt-add-'+slug);
+    const id = sel.value;
+    if(!id) return;
+    const p = cacheProdutos.find(x=>x.id===id);
+    if(!p) return;
+    vitrineEstado[slug].produtos.push({ id:p.id, name:p.name });
+    renderVitrinePanel();
+  }
+
+  function removerDaVitrine(slug, id){
+    vitrineEstado[slug].produtos = vitrineEstado[slug].produtos.filter(p=>p.id!==id);
+    renderVitrinePanel();
+  }
+
+  async function guardarVitrine(slug){
+    const statusEl = document.getElementById('vt-status-'+slug);
+    if(!supabase || modoDemo){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Liga o Supabase para guardar.'; return; }
+
+    const title = document.getElementById('vt-title-'+slug).value.trim();
+    const produtos = vitrineEstado[slug].produtos;
+
+    const { error: e1 } = await supabase.from('home_sections').update({ title }).eq('slug', slug);
+    await supabase.from('home_section_products').delete().eq('section_slug', slug);
+    let e2 = null;
+    if(produtos.length){
+      const linhas = produtos.map((p,i)=>({ section_slug:slug, product_id:p.id, position:i }));
+      const r = await supabase.from('home_section_products').insert(linhas);
+      e2 = r.error;
+    }
+    if(e1 || e2){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Erro ao guardar: ' + ((e1||e2).message); return; }
+    statusEl.style.color='var(--success)'; statusEl.textContent = 'Guardado! Já se aplica à loja.';
   }
 
   /* ================= UPLOAD DE IMAGENS ================= */
