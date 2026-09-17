@@ -11,81 +11,117 @@
 <meta property="og:image" content="https://somprojecto-prog.github.io/Roque-digital-/assets/logo.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
-<link rel="stylesheet" href="../assets/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="../assets/supabase.js"></script>
 <script src="../assets/store-common.js"></script>
 <style>
-  body{ padding-bottom:78px; }
-  .client-header{ background:var(--brown-900); position:sticky; top:0; z-index:100; }
-  .header-top{ max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:14px; padding:16px 24px; }
-  .brand{ display:flex; align-items:center; gap:12px; }
-  .brand .logo-box{ width:44px; height:44px; border-radius:12px; overflow:hidden; background:var(--white); flex-shrink:0; }
-  .brand .logo-box img{ width:100%; height:100%; object-fit:cover; }
-  .brand-name{ font-family:'Fraunces',serif; font-weight:600; font-size:18px; color:var(--cream); }
-  .brand-name span{ display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.14em; color:var(--gold); margin-top:2px; }
-  .back-link{ margin-left:auto; color:var(--cream); font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:6px; border:1px solid rgba(255,255,255,0.16); padding:9px 16px; border-radius:999px; }
-  .back-link:hover{ background:rgba(255,255,255,0.08); }
+  :root{
+    --bg:#080B14; --bg-2:#0D1220; --surface:#121A2E;
+    --brown:#1A2338; --brown-light:#243050; --brown-deep:#060911;
+    --gold:#F5A623; --gold-light:#FFC65C;
+    --text:#F5F7FB; --text-soft:#9AA5C0; --line:#232C46;
+    --danger:#E5484D; --success:#3FB950;
+    --radius:14px; --shadow:0 14px 34px -14px rgba(0,0,0,0.6);
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:40px; }
+  h1,h2{ font-family:'Playfair Display',serif; font-weight:700; margin:0; }
+  a{ text-decoration:none; }
+  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 22px; border-radius:10px; font-weight:700; font-size:14.5px; border:none; cursor:pointer; font-family:inherit; }
+  .btn-gold{ background:linear-gradient(135deg, var(--gold-light), var(--gold)); color:#1a1204; box-shadow:0 10px 24px -8px rgba(245,166,35,0.5); }
+  .btn-gold:disabled{ opacity:.5; cursor:not-allowed; box-shadow:none; }
 
-  main.product-main{ max-width:1100px; margin:0 auto; padding:44px 24px 90px; }
-  .product-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:48px; margin-bottom:64px; }
-  .product-image{ background:var(--cream-2); border-radius:24px; border:1px solid var(--line); aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; overflow:hidden; cursor:zoom-in; }
-  .product-image img{ transition:transform .35s ease; }
+  .client-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); position:sticky; top:0; z-index:100; padding:16px 22px; }
+  .header-row{ max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+  .brand{ display:flex; align-items:center; gap:12px; color:inherit; }
+  .logo-circle{ width:44px; height:44px; border-radius:50%; overflow:hidden; border:1.5px solid var(--gold); flex-shrink:0; }
+  .logo-circle img{ width:100%; height:100%; object-fit:cover; }
+  .brand-name{ font-family:'Playfair Display',serif; font-weight:700; font-size:18px; color:var(--text); }
+  .brand-tag{ font-family:'Inter',sans-serif; font-weight:700; font-size:11px; letter-spacing:0.12em; color:var(--gold); margin-top:2px; text-transform:uppercase; }
+  .header-user{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text); font-size:19px; flex-shrink:0; }
+
+  main.product-main{ max-width:1100px; margin:0 auto; padding:26px 22px 70px; }
+  .back-link{ display:inline-block; margin-bottom:22px; font-size:13px; color:var(--text-soft); }
+  .back-link:hover{ color:var(--gold-light); }
+
+  .product-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:40px; margin-bottom:56px; }
+  .product-image{ background:var(--surface); border:1px solid var(--line); border-radius:22px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; overflow:hidden; cursor:zoom-in; }
+  .product-image img{ width:100%; height:100%; object-fit:cover; transition:transform .35s ease; }
   .product-image:hover img{ transform:scale(1.12); }
-  .p-brand{ font-size:13px; color:var(--text-soft); font-weight:700; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; }
-  .p-name{ font-size:30px; margin-bottom:12px; }
-  .p-meta-row{ display:flex; align-items:center; gap:16px; margin-bottom:20px; }
-  .p-price-row{ display:flex; align-items:baseline; gap:10px; margin-bottom:22px; }
-  .p-price{ font-size:28px; font-weight:700; color:var(--brown-900); }
-  .p-old{ font-size:16px; color:var(--text-soft); text-decoration:line-through; }
+
+  .p-brand{ font-size:12.5px; color:var(--gold-light); font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+  .p-name{ font-size:28px; margin-bottom:12px; color:#fff; }
+  .p-meta-row{ display:flex; align-items:center; gap:16px; margin-bottom:20px; font-size:13px; color:var(--text-soft); flex-wrap:wrap; }
+  .stock-dot{ font-weight:700; }
+  .stock-dot.out{ color:var(--danger); }
+  .p-price-row{ display:flex; align-items:baseline; gap:10px; margin-bottom:20px; }
+  .p-price{ font-size:26px; font-weight:800; color:var(--gold); }
+  .p-old{ font-size:15px; color:var(--text-soft); text-decoration:line-through; }
   .p-desc{ font-size:14.5px; line-height:1.75; color:var(--text-soft); margin-bottom:26px; max-width:480px; }
+
   .qty-row{ display:flex; align-items:center; gap:14px; margin-bottom:24px; }
-  .qty-box{ display:flex; align-items:center; border:1.5px solid var(--line); border-radius:12px; overflow:hidden; }
-  .qty-box button{ width:38px; height:38px; background:var(--cream-2); font-size:16px; font-weight:700; color:var(--brown-900); }
-  .qty-box span{ width:42px; text-align:center; font-weight:700; }
+  .qty-box{ display:flex; align-items:center; border:1.5px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surface); }
+  .qty-box button{ width:38px; height:38px; background:var(--brown-light); border:none; font-size:16px; font-weight:700; color:var(--text); cursor:pointer; }
+  .qty-box span{ width:42px; text-align:center; font-weight:700; color:var(--text); }
+
+  .p-toast{ font-size:12.5px; color:var(--success); font-weight:700; height:18px; margin-bottom:10px; }
   .p-actions{ display:flex; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
   .p-actions .btn{ flex:1; min-width:180px; }
-  .btn-fav{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 22px; border-radius:10px; font-weight:600; font-size:14.5px; border:1.5px solid var(--line); background:var(--white); color:var(--brown-900); }
+  .btn-fav{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 22px; border-radius:10px; font-weight:700; font-size:14.5px; border:1.5px solid var(--line); background:var(--surface); color:var(--text); cursor:pointer; font-family:inherit; }
   .btn-fav.active{ border-color:var(--danger); color:var(--danger); }
-  .p-toast{ font-size:12.5px; color:var(--success); font-weight:700; height:18px; margin-bottom:10px; }
-  .p-specs{ margin-top:26px; border-top:1px solid var(--line); padding-top:20px; }
+
+  .p-specs{ margin-top:26px; border-top:1px solid var(--line); padding-top:20px; list-style:none; padding-left:0; }
   .p-specs li{ font-size:13px; color:var(--text-soft); line-height:2; }
   .p-features{ margin-top:20px; border-top:1px solid var(--line); padding-top:20px; }
-  .p-features h3{ font-size:15px; margin-bottom:10px; color:var(--brown-900); }
-  .p-features li{ font-size:13px; color:var(--text-soft); line-height:1.9; list-style:disc; margin-left:18px; }
+  .p-features h3{ font-size:15px; margin-bottom:10px; color:var(--gold-light); font-family:'Inter',sans-serif; font-weight:700; }
+  .p-features ul{ padding-left:18px; margin:0; }
+  .p-features li{ font-size:13px; color:var(--text-soft); line-height:1.9; }
 
-  .related-section{ margin-top:56px; }
-  .related-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  .related-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; overflow:hidden; transition:.2s; }
-  .related-card:hover{ box-shadow:0 14px 30px -14px rgba(0,0,0,0.25); transform:translateY(-2px); }
-  .related-img{ height:120px; background:var(--cream-2); display:flex; align-items:center; justify-content:center; font-size:38px; }
-  .related-body{ padding:12px 14px 16px; }
-  .related-name{ font-size:13px; font-weight:700; color:var(--brown-900); margin-bottom:3px; }
-  .related-price{ font-size:12.5px; color:var(--brown-900); font-weight:700; }
-  @media (max-width:700px){ .related-grid{ grid-template-columns:repeat(2,1fr); } }
+  .section-eyebrow{ color:var(--gold-light); font-weight:700; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:4px; }
+  .reviews-head{ margin-bottom:20px; }
+  .reviews-head h2{ font-size:21px; color:#fff; }
 
-  .reviews-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; }
-  .reviews-head h2{ font-size:22px; }
-  .review-card{ background:var(--white); border:1px solid var(--line); border-radius:16px; padding:22px; margin-bottom:14px; position:relative; }
+  .review-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-bottom:14px; }
   .review-stars{ color:var(--gold); font-size:13.5px; margin-bottom:8px; letter-spacing:2px; }
   .review-text{ font-size:13.5px; color:var(--text); line-height:1.65; margin-bottom:10px; }
   .review-name{ font-size:12px; font-weight:700; color:var(--text-soft); text-transform:uppercase; letter-spacing:.04em; }
-  .review-del{ position:absolute; top:16px; right:16px; font-size:11.5px; font-weight:700; color:var(--danger); }
   .review-empty{ font-size:13px; color:var(--text-soft); margin-bottom:14px; }
 
-  .review-form{ background:var(--cream-2); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:22px; }
-  .review-form textarea{ width:100%; min-height:80px; margin-top:10px; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line); font-family:inherit; font-size:13.5px; resize:vertical; }
+  .review-form{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; margin-bottom:22px; }
+  .review-form textarea{ width:100%; min-height:80px; margin-top:10px; padding:11px 13px; border-radius:10px; border:1.5px solid var(--line); background:var(--bg-2); color:var(--text); font-family:inherit; font-size:13.5px; resize:vertical; }
   .star-picker{ display:flex; gap:4px; font-size:24px; cursor:pointer; }
   .star-picker span{ color:var(--line); }
   .star-picker span.active{ color:var(--gold); }
   .review-login-cta{ font-size:13px; color:var(--text-soft); }
-  .review-login-cta a{ color:var(--brown-900); font-weight:700; border-bottom:1.5px solid var(--gold); }
+  .review-login-cta a{ color:var(--gold-light); font-weight:700; }
+
+  .related-section{ margin-top:56px; }
+  .related-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  @media (max-width:700px){ .related-grid{ grid-template-columns:repeat(2,1fr); } }
+
+  /* ---------- Cartão de produto (igual ao da página inicial) ---------- */
+  .prod-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; overflow:hidden; position:relative; transition:box-shadow .2s, border-color .2s; }
+  .prod-card:hover{ box-shadow:var(--shadow); border-color:var(--brown-light); }
+  .prod-img{ height:130px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; overflow:hidden; }
+  .prod-img-main, .prod-img-hover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .35s ease; }
+  .prod-img-hover{ opacity:0; }
+  .prod-img:hover .prod-img-hover{ opacity:1; }
+  .prod-img:hover .prod-img-main{ opacity:0; }
+  .prod-img.show-alt .prod-img-hover{ opacity:1; }
+  .prod-img.show-alt .prod-img-main{ opacity:0; }
+  .prod-tag{ position:absolute; top:9px; left:9px; background:var(--brown-light); color:var(--text); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; border:1px solid var(--gold); z-index:2; }
+  .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text); transition:.2s; z-index:2; cursor:pointer; }
+  .prod-body{ padding:13px 14px 15px; }
+  .prod-name{ font-size:13.5px; font-weight:700; margin-bottom:3px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .prod-brand{ font-size:11px; color:var(--text-soft); margin-bottom:8px; }
+  .prod-price-row{ display:flex; align-items:center; justify-content:space-between; }
+  .prod-price{ font-weight:700; font-size:14px; color:var(--gold-light); }
+  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--brown-light); color:var(--text); font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; border:1px solid var(--gold); cursor:pointer; }
 
   .not-found{ text-align:center; padding:100px 20px; }
-  .not-found a{ display:inline-block; margin-top:16px; font-weight:700; color:var(--brown-900); border-bottom:1.5px solid var(--gold); }
+  .not-found a{ display:inline-block; margin-top:16px; font-weight:700; color:var(--gold-light); }
 
-  footer.store-footer{ background:var(--brown-900); color:#C9B8A5; padding:40px 24px 22px; text-align:center; font-size:12.5px; }
+  footer.store-footer{ background:var(--brown-deep); color:var(--text-soft); padding:34px 22px 24px; border-top:1.5px solid var(--gold); text-align:center; font-size:12.5px; }
 
   @media (max-width:840px){
     .product-grid{ grid-template-columns:1fr; }
@@ -95,19 +131,24 @@
 <body>
 
 <header class="client-header">
-  <div class="header-top">
-    <div class="brand">
-      <div class="logo-box"><img src="../assets/logo.png" alt="Roque Digital"></div>
-      <div class="brand-name">Roque Digital<span>LOJA ONLINE</span></div>
-    </div>
-    <a href="index.html" class="back-link">← Voltar à loja</a>
+  <div class="header-row">
+    <a href="index.html" class="brand">
+      <div class="logo-circle"><img src="../assets/logo.png" alt="Roque Digital"></div>
+      <div>
+        <div class="brand-name">Roque Digital</div>
+        <div class="brand-tag">Loja Online</div>
+      </div>
+    </a>
+    <a href="conta.html" class="header-user">👤</a>
   </div>
 </header>
 
 <main class="product-main">
+  <a href="index.html" class="back-link">← Voltar à loja</a>
+
   <div id="notFoundView" class="not-found" style="display:none;">
     <div style="font-size:52px;">🔍</div>
-    <h1 style="font-size:22px; margin-top:14px;">Produto não encontrado</h1>
+    <h1 style="font-size:22px; margin-top:14px; color:#fff;">Produto não encontrado</h1>
     <p style="color:var(--text-soft); margin-top:8px;">Pode ter sido removido ou o link está incorreto.</p>
     <a href="index.html">← Voltar à loja</a>
   </div>
@@ -148,17 +189,22 @@
         <li>🔒 Pagamento seguro — Multicaixa Express, transferência ou na entrega</li>
         <li>↩️ Trocas e devoluções até 7 dias após a receção</li>
       </ul>
+
+      <div class="p-features" id="pFeaturesWrap" style="display:none;">
+        <h3>Características</h3>
+        <ul id="pFeatures"></ul>
+      </div>
     </div>
   </div>
 
   <section>
-    <div class="reviews-head"><h2>Avaliações de clientes</h2></div>
+    <div class="reviews-head"><p class="section-eyebrow">Opiniões</p><h2>Avaliações de clientes</h2></div>
     <div id="reviewFormWrap"></div>
     <div id="reviewsList"><p class="review-empty">A carregar avaliações…</p></div>
   </section>
 
   <section class="related-section">
-    <div class="reviews-head"><h2>Produtos relacionados</h2></div>
+    <div class="reviews-head"><p class="section-eyebrow">Podes gostar também</p><h2>Produtos relacionados</h2></div>
     <div class="related-grid" id="relatedGrid"></div>
   </section>
   </div>
@@ -175,9 +221,8 @@
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('id');
 
-  let produtoAtual = null;   // linha da tabela products
+  let produtoAtual = null;    // linha da tabela products
   let currentCustomer = null; // linha da tabela customers (se tiver sessão)
-  let souAdminOuGestor = false;
   let estrelaEscolhida = 0;
 
   function mostrarNaoEncontrado(){
@@ -206,25 +251,36 @@
     let metaDesc = document.querySelector('meta[name="description"]');
     if(!metaDesc){ metaDesc = document.createElement('meta'); metaDesc.setAttribute('name','description'); document.head.appendChild(metaDesc); }
     metaDesc.setAttribute('content', `${p.name} — ${p.brand||''} por ${Number(p.price).toLocaleString('pt-PT')} Kz na Roque Digital.`);
-    if(p.image){
+    if(p.image_url){
       let ogImg = document.querySelector('meta[property="og:image"]');
       if(!ogImg){ ogImg = document.createElement('meta'); ogImg.setAttribute('property','og:image'); document.head.appendChild(ogImg); }
-      ogImg.setAttribute('content', p.image);
+      ogImg.setAttribute('content', p.image_url);
     }
     document.getElementById('pBrand').textContent = p.brand || '';
     document.getElementById('pName').textContent = p.name;
     document.getElementById('pPrice').textContent = Number(p.price).toLocaleString('pt-PT') + ' Kz';
     document.getElementById('pDesc').textContent = p.description || '';
 
+    if(p.promo_price){
+      document.getElementById('pOld').style.display = 'inline';
+      document.getElementById('pOld').textContent = Number(p.price).toLocaleString('pt-PT') + ' Kz';
+      document.getElementById('pPrice').textContent = Number(p.promo_price).toLocaleString('pt-PT') + ' Kz';
+    }
+
     const imgBox = document.getElementById('productImage');
-    imgBox.innerHTML = p.image_url ? `<img src="${p.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦';
+    imgBox.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '📦';
+
+    if(Array.isArray(p.features) && p.features.length){
+      document.getElementById('pFeaturesWrap').style.display = 'block';
+      document.getElementById('pFeatures').innerHTML = p.features.map(f=>`<li>${f}</li>`).join('');
+    }
 
     const stockEl = document.getElementById('pStock');
     const addCartBtn = document.getElementById('addCartBtn');
     const semStock = typeof p.stock === 'number' && p.stock <= 0;
     if(semStock){
       stockEl.textContent = 'Esgotado'; stockEl.classList.add('out');
-      addCartBtn.disabled = true; addCartBtn.style.opacity = '.5'; addCartBtn.style.cursor = 'not-allowed';
+      addCartBtn.disabled = true; addCartBtn.textContent = 'Esgotado';
     } else {
       stockEl.textContent = 'Em stock';
     }
@@ -237,31 +293,21 @@
     const { data } = await supabase.from('products').select('*').eq('active', true).neq('id', p.id).limit(4);
     const grid = document.getElementById('relatedGrid');
     if(!data || !data.length){ grid.innerHTML = ''; return; }
-    grid.innerHTML = data.map(rp => `
-      <a class="related-card" href="produto.html?id=${rp.id}">
-        <div class="related-img">${rp.image_url ? `<img src="${rp.image_url}" style="width:100%;height:100%;object-fit:cover;">` : '📦'}</div>
-        <div class="related-body">
-          <div class="related-name">${rp.name}</div>
-          <div class="related-price">${Number(rp.price).toLocaleString('pt-PT')} Kz</div>
-        </div>
-      </a>
-    `).join('');
+    grid.innerHTML = data.map(rp => `<a href="produto.html?id=${rp.id}" style="display:block; color:inherit;">${RD.productCardHTML(rp)}</a>`).join('');
   }
 
-  // ---------- Quem está a ver a página (para saber o que pode fazer) ----------
+  // ---------- Quem está a ver a página (para saber se pode avaliar) ----------
   async function carregarSessao(){
     if(!supabase) return;
     const { data:{ session } } = await supabase.auth.getSession();
     if(!session) return;
-
     const { data: customer } = await supabase.from('customers').select('*').eq('auth_user_id', session.user.id).single();
     currentCustomer = customer || null;
-
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-    souAdminOuGestor = !!(profile && ['admin','gestor'].includes(profile.role));
   }
 
   // ---------- Avaliações ----------
+  // Nota: apagar uma avaliação só é possível no painel de gestão — o cliente
+  // nunca vê essa opção aqui, propositadamente.
   async function carregarAvaliacoes(){
     await carregarSessao();
     renderFormAvaliacao();
@@ -282,16 +328,12 @@
     const media = data.reduce((s,r)=> s + r.rating, 0) / data.length;
     document.getElementById('pRating').textContent = `${RD.renderStars(media)} (${data.length})`;
 
-    list.innerHTML = data.map(r => {
-      const podeApagar = souAdminOuGestor;
-      return `
-        <div class="review-card">
-          ${podeApagar ? `<span class="review-del" onclick="apagarAvaliacao('${r.id}')">Apagar</span>` : ''}
-          <div class="review-stars">${RD.renderStars(r.rating)}</div>
-          ${r.comment ? `<p class="review-text">${r.comment}</p>` : ''}
-          <div class="review-name">${(r.customers && r.customers.full_name) || 'Cliente'} · ${new Date(r.created_at).toLocaleDateString('pt-PT')}</div>
-        </div>`;
-    }).join('');
+    list.innerHTML = data.map(r => `
+      <div class="review-card">
+        <div class="review-stars">${RD.renderStars(r.rating)}</div>
+        ${r.comment ? `<p class="review-text">${r.comment}</p>` : ''}
+        <div class="review-name">${(r.customers && r.customers.full_name) || 'Cliente'} · ${new Date(r.created_at).toLocaleDateString('pt-PT')}</div>
+      </div>`).join('');
   }
 
   function renderFormAvaliacao(){
@@ -335,13 +377,6 @@
     carregarAvaliacoes();
   }
 
-  async function apagarAvaliacao(id){
-    const { error } = await supabase.from('product_reviews').delete().eq('id', id);
-    if(error){ RD.showToast('Erro ao apagar: ' + error.message); return; }
-    RD.showToast('Avaliação apagada');
-    carregarAvaliacoes();
-  }
-
   // ---------- Quantidade ----------
   let qty = 1;
   const qtyValue = document.getElementById('qtyValue');
@@ -357,8 +392,8 @@
     const ok = await RD.requireAccount(supabase, { type:'add-to-cart', product: produto });
     if(!ok) return;
     RD.addToCart(produto, qty);
-    toast.textContent = `✓ ${qty}× ${produtoAtual.name} adicionado ao carrinho`;
-    setTimeout(()=>{ toast.textContent=''; }, 3000);
+    // Vai direto para o carrinho, para o cliente finalizar a compra.
+    window.location.href = 'carrinho.html';
   });
 
   const favBtn = document.getElementById('addFavBtn');
@@ -371,6 +406,18 @@
     favBtn.classList.toggle('active', isFav);
     favBtn.textContent = isFav ? '♥ Guardado nos favoritos' : '♡ Guardar nos favoritos';
   });
+
+  // Troca de foto ao manter pressionado, igual à página inicial.
+  (function(){
+    let pressTimer = null;
+    document.addEventListener('touchstart', function(e){
+      const box = e.target.closest('.prod-img');
+      if(!box || !box.querySelector('.prod-img-hover')) return;
+      pressTimer = setTimeout(()=> box.classList.add('show-alt'), 350);
+    }, { passive:true });
+    document.addEventListener('touchend', function(){ clearTimeout(pressTimer); document.querySelectorAll('.prod-img.show-alt').forEach(b=>b.classList.remove('show-alt')); });
+    document.addEventListener('touchcancel', function(){ clearTimeout(pressTimer); document.querySelectorAll('.prod-img.show-alt').forEach(b=>b.classList.remove('show-alt')); });
+  })();
 
   carregarProduto().then(()=>{
     if(produtoAtual) favBtn.classList.toggle('active', RD.isFavorite(produtoAtual.id));
