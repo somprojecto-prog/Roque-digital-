@@ -190,10 +190,36 @@ const RD = {
     }catch(e){ console.warn('Não foi possível aplicar o conteúdo do site.', e); }
   },
 
+  // ---------- Cartão de produto (partilhado com categoria.html / secao.html) ----------
+  prodImgMarkup(imgMain, imgHover, emoji){
+    if(imgMain && imgHover) return `<img class="prod-img-main" src="${imgMain}"><img class="prod-img-hover" src="${imgHover}">`;
+    if(imgMain) return `<img class="prod-img-main" src="${imgMain}" style="width:100%;height:100%;object-fit:cover;">`;
+    return emoji || '📦';
+  },
+  productCardHTML(p){
+    return `
+      <div class="prod-card" data-id="${p.id}">
+        <div class="prod-img">
+          ${this.prodImgMarkup(p.image_url, p.image_url_hover, '📦')}
+          ${p.tag ? `<span class="prod-tag">${p.tag}</span>` : ''}
+          <div class="prod-fav" onclick="toggleFav(this)">${this.isFavorite(p.id) ? '❤️' : '♡'}</div>
+        </div>
+        <div class="prod-body">
+          <div class="prod-name">${p.name}</div>
+          <div class="prod-brand">${p.brand || ''}</div>
+          <div class="prod-price-row">
+            <span class="prod-price">${Number(p.price).toLocaleString('pt-PT')} Kz</span>
+            <div class="prod-add" onclick="addToCartFromCard(this)">+</div>
+          </div>
+        </div>
+      </div>`;
+  },
+
   // ---------- Categorias da página inicial ----------
   // Lê a tabela `categories` (a mesma usada no painel de gestão para os
   // produtos) e, se tiver categorias com imagem, substitui os cartões fixos
-  // da página inicial (#catGrid) pelas categorias reais da loja.
+  // da página inicial (#catGrid) pelas categorias reais da loja. Cada
+  // cartão abre categoria.html com os produtos filtrados por essa categoria.
   async loadHomeCategories(supabaseClient){
     const grid = document.getElementById('catGrid');
     if(!grid || !supabaseClient) return;
@@ -204,9 +230,43 @@ const RD = {
         const imagem = c.image_url
           ? `<img class="cat-thumb" src="${c.image_url}" alt="${c.name}">`
           : `<div class="emoji">${c.emoji || '🛍️'}</div>`;
-        return `<a href="#produtos" class="cat-card">${imagem}<div class="label">${c.name}</div></a>`;
+        return `<a href="categoria.html?id=${c.id}&nome=${encodeURIComponent(c.name)}" class="cat-card">${imagem}<div class="label">${c.name}</div></a>`;
       }).join('');
     }catch(e){ console.warn('Não foi possível carregar as categorias.', e); }
+  },
+
+  // ---------- Barras editáveis da página inicial (Destaques/Vendidos/Novidades) ----------
+  // Aplica os títulos escolhidos no painel (tabela home_sections) aos
+  // cabeçalhos de cada barra, se existirem.
+  async applyHomeSectionTitles(supabaseClient){
+    if(!supabaseClient) return;
+    try{
+      const { data } = await supabaseClient.from('home_sections').select('*');
+      if(!data) return;
+      data.forEach(s=>{
+        const h2 = document.getElementById(`secTitle-${s.slug}`);
+        const eyebrow = document.getElementById(`secEyebrow-${s.slug}`);
+        if(h2 && s.title) h2.textContent = s.title;
+        if(eyebrow && s.eyebrow) eyebrow.textContent = s.eyebrow;
+      });
+    }catch(e){ /* mantém os títulos fixos como reserva */ }
+  },
+
+  // Vai buscar os produtos de uma barra: primeiro tenta os escolhidos à
+  // mão no painel (home_section_products); se não houver nenhum, devolve
+  // null para quem chamou continuar com o comportamento automático.
+  async getCuratedSectionProducts(supabaseClient, slug, limit){
+    if(!supabaseClient) return null;
+    try{
+      let q = supabaseClient.from('home_section_products')
+        .select('position, products(*)')
+        .eq('section_slug', slug)
+        .order('position', { ascending:true });
+      if(limit) q = q.limit(limit);
+      const { data, error } = await q;
+      if(error || !data || data.length === 0) return null;
+      return data.map(row=> row.products).filter(Boolean);
+    }catch(e){ return null; }
   },
 
   // ---------- Estados da encomenda (usado na loja e no painel) ----------
