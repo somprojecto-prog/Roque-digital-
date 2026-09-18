@@ -46,6 +46,9 @@
 
   .product-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:40px; margin-bottom:56px; }
   .product-image{ background:var(--surface); border:1px solid var(--line); border-radius:22px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; font-size:110px; overflow:hidden; cursor:zoom-in; }
+  .product-thumbs{ display:flex; gap:8px; margin-top:10px; overflow-x:auto; }
+  .product-thumbs img{ width:64px; height:64px; object-fit:cover; border-radius:10px; border:1.5px solid var(--line); cursor:pointer; flex-shrink:0; opacity:.65; transition:.2s; }
+  .product-thumbs img.active{ border-color:var(--gold); opacity:1; }
   .product-image img{ width:100%; height:100%; object-fit:cover; transition:transform .35s ease; }
   .product-image:hover img{ transform:scale(1.12); }
 
@@ -155,7 +158,10 @@
 
   <div id="productContent">
   <div class="product-grid">
-    <div class="product-image" id="productImage">📦</div>
+    <div>
+      <div class="product-image" id="productImage">📦</div>
+      <div class="product-thumbs" id="productThumbs"></div>
+    </div>
     <div>
       <div class="p-brand" id="pBrand">Marca</div>
       <h1 class="p-name" id="pName">Produto</h1>
@@ -225,6 +231,13 @@
   let currentCustomer = null; // linha da tabela customers (se tiver sessão)
   let estrelaEscolhida = 0;
 
+  function trocarFotoProduto(url, thumbEl){
+    const mainImg = document.getElementById('productImageMain');
+    if(mainImg) mainImg.src = url;
+    document.querySelectorAll('#productThumbs img').forEach(t=> t.classList.remove('active'));
+    thumbEl.classList.add('active');
+  }
+
   function mostrarNaoEncontrado(){
     document.getElementById('productContent').style.display = 'none';
     document.getElementById('notFoundView').style.display = 'block';
@@ -267,8 +280,16 @@
       document.getElementById('pPrice').textContent = Number(p.promo_price).toLocaleString('pt-PT') + ' Kz';
     }
 
+    const galeria = (Array.isArray(p.images) && p.images.length) ? p.images : [p.image_url, p.image_url_hover].filter(Boolean);
     const imgBox = document.getElementById('productImage');
-    imgBox.innerHTML = p.image_url ? `<img src="${p.image_url}">` : '📦';
+    imgBox.innerHTML = galeria.length ? `<img id="productImageMain" src="${galeria[0]}">` : '📦';
+
+    const thumbsBox = document.getElementById('productThumbs');
+    if(galeria.length > 1){
+      thumbsBox.innerHTML = galeria.map((url,i)=> `<img src="${url}" class="${i===0?'active':''}" onclick="trocarFotoProduto('${url}', this)">`).join('');
+    } else {
+      thumbsBox.innerHTML = '';
+    }
 
     if(Array.isArray(p.features) && p.features.length){
       document.getElementById('pFeaturesWrap').style.display = 'block';
