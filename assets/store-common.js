@@ -164,7 +164,18 @@ const RD = {
       if(data.hero_descricao) document.querySelectorAll('.js-hero-descricao').forEach(el=> el.textContent = data.hero_descricao);
 
       if(data.logo_url) document.querySelectorAll('.js-site-logo').forEach(el=> el.src = data.logo_url);
-      if(data.hero_url) document.querySelectorAll('.js-hero-image').forEach(el=> el.src = data.hero_url);
+
+      // Carrossel do hero — quantas fotos o Admin tiver adicionado, a passar de 2,5 em 2,5s
+      const heroBg = document.getElementById('heroBg');
+      const heroDots = document.getElementById('heroDots');
+      const imagens = Array.isArray(data.hero_images) && data.hero_images.length ? data.hero_images : (data.hero_url ? [data.hero_url] : null);
+      if(heroBg && imagens && imagens.length){
+        heroBg.innerHTML = imagens.map((url,i)=> `<img class="js-hero-image${i===0?' active':''}" src="${url}" alt="">`).join('');
+        if(heroDots) heroDots.innerHTML = imagens.map((_,i)=> `<span class="${i===0?'active':''}" onclick="RD.heroGoTo(${i})"></span>`).join('');
+        if(imagens.length > 1) RD.startHeroCarousel(imagens.length);
+      } else if(heroBg && data.hero_url){
+        document.querySelectorAll('.js-hero-image').forEach(el=> el.src = data.hero_url);
+      }
 
       // Cores do site (definidas no painel de gestão, em "Conteúdo do site")
       const raiz = document.documentElement.style;
@@ -188,6 +199,19 @@ const RD = {
       if(data.redes_instagram) document.querySelectorAll('.js-social-instagram').forEach(el=> el.href = data.redes_instagram);
       if(data.redes_facebook) document.querySelectorAll('.js-social-facebook').forEach(el=> el.href = data.redes_facebook);
     }catch(e){ console.warn('Não foi possível aplicar o conteúdo do site.', e); }
+  },
+
+  // ---------- Carrossel do hero (várias fotos, troca a cada 2,5s) ----------
+  _heroIndex: 0,
+  _heroTimer: null,
+  startHeroCarousel(total){
+    clearInterval(this._heroTimer);
+    this._heroTimer = setInterval(()=> this.heroGoTo((this._heroIndex + 1) % total), 2500);
+  },
+  heroGoTo(i){
+    this._heroIndex = i;
+    document.querySelectorAll('#heroBg .js-hero-image').forEach((img,idx)=> img.classList.toggle('active', idx===i));
+    document.querySelectorAll('#heroDots span').forEach((dot,idx)=> dot.classList.toggle('active', idx===i));
   },
 
   // ---------- Cartão de produto (partilhado com categoria.html / secao.html) ----------
