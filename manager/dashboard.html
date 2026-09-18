@@ -334,13 +334,14 @@
             <p class="upload-status" id="img-logo-status"></p>
           </div>
           <div class="field">
-            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Imagem de destaque (página inicial)</label>
-            <div class="image-upload-box" onclick="document.getElementById('img-hero-file').click()">
-              <img id="img-hero-preview" style="display:none;">
-              <span id="img-hero-placeholder">Toque para escolher uma imagem</span>
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Fotos do carrossel principal (página inicial)</label>
+            <p style="font-size:12px; color:var(--text-soft); margin-bottom:10px;">Adiciona quantas quiseres — passam automaticamente de 2,5 em 2,5 segundos na loja.</p>
+            <div id="heroImagesGrid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:12px;"></div>
+            <div class="image-upload-box" style="height:70px;" onclick="document.getElementById('hero-img-file').click()">
+              <span>+ Adicionar foto</span>
             </div>
-            <input type="file" id="img-hero-file" accept="image/*" style="display:none;" onchange="handleImagemUpload(this,'hero_url','img-hero')">
-            <p class="upload-status" id="img-hero-status"></p>
+            <input type="file" id="hero-img-file" accept="image/*" style="display:none;" onchange="adicionarFotoHero(this)">
+            <p class="upload-status" id="hero-img-status"></p>
           </div>
         </div>
       </div>
@@ -383,22 +384,14 @@
           <div class="field"><label>Etiqueta</label><input id="pf-tag" placeholder="NOVO, PROMOÇÃO..."></div>
         </div>
         <div class="field">
-          <label>Foto do produto</label>
-          <div class="image-upload-box" onclick="document.getElementById('pf-imagem-file').click()">
-            <img id="pf-imagem-preview" style="display:none;">
-            <span id="pf-imagem-placeholder">Toque para escolher uma imagem</span>
+          <label>Fotos do produto</label>
+          <p style="font-size:11.5px; color:var(--text-soft); margin:-4px 0 10px;">Adiciona quantas quiseres. A primeira é a foto de capa; a segunda aparece ao passar o rato.</p>
+          <div id="pfImagensGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:10px;"></div>
+          <div class="image-upload-box" style="height:60px;" onclick="document.getElementById('pf-imagem-file').click()">
+            <span>+ Adicionar foto</span>
           </div>
-          <input type="file" id="pf-imagem-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'pf-imagem')">
+          <input type="file" id="pf-imagem-file" accept="image/*" style="display:none;" onchange="adicionarFotoProduto(this)">
           <p class="upload-status" id="pf-imagem-status"></p>
-        </div>
-        <div class="field">
-          <label>2ª foto (aparece ao passar o rato / manter pressionado)</label>
-          <div class="image-upload-box" onclick="document.getElementById('pf-imagem2-file').click()">
-            <img id="pf-imagem2-preview" style="display:none;">
-            <span id="pf-imagem2-placeholder">Opcional — toque para escolher uma imagem</span>
-          </div>
-          <input type="file" id="pf-imagem2-file" accept="image/*" style="display:none;" onchange="handleImagemUploadCampo(this,'pf-imagem2')">
-          <p class="upload-status" id="pf-imagem2-status"></p>
         </div>
         <label class="toggle-row"><input id="pf-ativo" type="checkbox" checked style="width:auto;"> Produto ativo (visível na loja)</label>
         <button type="submit" class="btn btn-primary" style="width:100%;">Guardar produto</button>
@@ -630,6 +623,42 @@
     }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar imagem: ' + err.message; }
   }
 
+  // ---------- Fotos do carrossel principal (quantas o utilizador quiser) ----------
+  let heroImagensAtuais = [];
+  function renderHeroImagesGrid(){
+    const grid = document.getElementById('heroImagesGrid');
+    if(!grid) return;
+    grid.innerHTML = heroImagensAtuais.map((url,i)=>`
+      <div style="position:relative; border-radius:10px; overflow:hidden; aspect-ratio:1/1; border:1px solid var(--line);">
+        <img src="${url}" style="width:100%; height:100%; object-fit:cover; display:block;">
+        <button onclick="removerFotoHero(${i})" style="position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,0.65); color:#fff; border:none; font-size:13px; cursor:pointer;">✕</button>
+      </div>
+    `).join('') || '<p class="empty-state" style="grid-column:1/-1; padding:14px 0;">Ainda não há fotos no carrossel.</p>';
+  }
+  async function adicionarFotoHero(inputEl){
+    const file = inputEl.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById('hero-img-status');
+    if(!supabase || modoDemo){ statusEl.textContent = 'Liga o Supabase para enviar imagens.'; return; }
+    statusEl.textContent = 'A enviar...';
+    try{
+      const url = await uploadImagem(file);
+      heroImagensAtuais.push(url);
+      const { error } = await supabase.from('site_settings').update({ hero_images: heroImagensAtuais }).eq('id',1);
+      if(error) throw error;
+      renderHeroImagesGrid();
+      statusEl.textContent = 'Foto adicionada ao carrossel.';
+      inputEl.value = '';
+    }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar imagem: ' + err.message; }
+  }
+  async function removerFotoHero(indice){
+    if(!confirm('Remover esta foto do carrossel?')) return;
+    heroImagensAtuais.splice(indice,1);
+    if(supabase && !modoDemo){ await supabase.from('site_settings').update({ hero_images: heroImagensAtuais }).eq('id',1); }
+    renderHeroImagesGrid();
+    showToast('Foto removida.');
+  }
+
   /* ================= CATEGORIAS ================= */
   let cacheCategorias = [];
   async function carregarCategorias(){
@@ -762,6 +791,7 @@
   }
 
   let currentProdutoId = null;
+  let pfImagensAtuais = [];
   function abrirModalProduto(p){
     currentProdutoId = p ? p.id : null;
     document.getElementById('produtoModalTitulo').textContent = p ? 'Editar produto' : 'Novo produto';
@@ -775,25 +805,50 @@
     document.getElementById('pf-tag').value = p ? (p.tag||'') : '';
     document.getElementById('pf-ativo').checked = p ? p.active : true;
 
-    const fileInput = document.getElementById('pf-imagem-file');
-    fileInput.dataset.url = p ? (p.image_url||'') : '';
-    const previewImg = document.getElementById('pf-imagem-preview');
-    const placeholder = document.getElementById('pf-imagem-placeholder');
-    if(p && p.image_url){ previewImg.src = p.image_url; previewImg.style.display='block'; placeholder.style.display='none'; }
-    else{ previewImg.style.display='none'; placeholder.style.display='block'; }
+    // Junta a galeria (images[]) com as fotos antigas (image_url/image_url_hover),
+    // para produtos criados antes desta funcionalidade continuarem a aparecer.
+    if(p && Array.isArray(p.images) && p.images.length){
+      pfImagensAtuais = [...p.images];
+    } else if(p){
+      pfImagensAtuais = [p.image_url, p.image_url_hover].filter(Boolean);
+    } else {
+      pfImagensAtuais = [];
+    }
+    renderPfImagensGrid();
     document.getElementById('pf-imagem-status').textContent = '';
-
-    const fileInput2 = document.getElementById('pf-imagem2-file');
-    fileInput2.dataset.url = p ? (p.image_url_hover||'') : '';
-    const previewImg2 = document.getElementById('pf-imagem2-preview');
-    const placeholder2 = document.getElementById('pf-imagem2-placeholder');
-    if(p && p.image_url_hover){ previewImg2.src = p.image_url_hover; previewImg2.style.display='block'; placeholder2.style.display='none'; }
-    else{ previewImg2.style.display='none'; placeholder2.style.display='block'; }
-    document.getElementById('pf-imagem2-status').textContent = '';
 
     document.getElementById('produtoModal').classList.add('open');
   }
   function fecharModalProduto(){ document.getElementById('produtoModal').classList.remove('open'); }
+
+  function renderPfImagensGrid(){
+    const grid = document.getElementById('pfImagensGrid');
+    grid.innerHTML = pfImagensAtuais.map((url,i)=>`
+      <div style="position:relative; border-radius:8px; overflow:hidden; aspect-ratio:1/1; border:1px solid var(--line);">
+        <img src="${url}" style="width:100%; height:100%; object-fit:cover; display:block;">
+        ${i===0?'<span style="position:absolute; bottom:3px; left:3px; background:var(--gold); color:var(--brown-900); font-size:9px; font-weight:800; padding:1px 6px; border-radius:999px;">CAPA</span>':''}
+        <button type="button" onclick="removerFotoProduto(${i})" style="position:absolute; top:3px; right:3px; width:19px; height:19px; border-radius:50%; background:rgba(0,0,0,0.65); color:#fff; border:none; font-size:11px; cursor:pointer;">✕</button>
+      </div>
+    `).join('');
+  }
+  async function adicionarFotoProduto(inputEl){
+    const file = inputEl.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById('pf-imagem-status');
+    if(!supabase || modoDemo){ statusEl.textContent = 'Liga o Supabase para enviar imagens.'; return; }
+    statusEl.textContent = 'A enviar...';
+    try{
+      const url = await uploadImagem(file);
+      pfImagensAtuais.push(url);
+      renderPfImagensGrid();
+      statusEl.textContent = 'Foto adicionada.';
+      inputEl.value = '';
+    }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar imagem: ' + err.message; }
+  }
+  function removerFotoProduto(indice){
+    pfImagensAtuais.splice(indice,1);
+    renderPfImagensGrid();
+  }
 
   document.getElementById('produtoForm').addEventListener('submit', async (e)=>{
     e.preventDefault();
@@ -806,8 +861,9 @@
       promo_price: document.getElementById('pf-promo').value ? Number(document.getElementById('pf-promo').value) : null,
       stock: Number(document.getElementById('pf-stock').value) || 0,
       tag: document.getElementById('pf-tag').value.trim() || null,
-      image_url: document.getElementById('pf-imagem-file').dataset.url || null,
-      image_url_hover: document.getElementById('pf-imagem2-file').dataset.url || null,
+      images: pfImagensAtuais,
+      image_url: pfImagensAtuais[0] || null,
+      image_url_hover: pfImagensAtuais[1] || null,
       active: document.getElementById('pf-ativo').checked
     };
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar produtos.'); fecharModalProduto(); return; }
@@ -1032,7 +1088,8 @@
     document.getElementById('cf-cor-fundo').value = data.cor_fundo || '#080B14';
 
     if(data.logo_url){ document.getElementById('img-logo-preview').src = data.logo_url; document.getElementById('img-logo-preview').style.display='block'; document.getElementById('img-logo-placeholder').style.display='none'; }
-    if(data.hero_url){ document.getElementById('img-hero-preview').src = data.hero_url; document.getElementById('img-hero-preview').style.display='block'; document.getElementById('img-hero-placeholder').style.display='none'; }
+    heroImagensAtuais = Array.isArray(data.hero_images) ? data.hero_images : [];
+    renderHeroImagesGrid();
   }
   async function guardarConteudo(){
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar o conteúdo.'); return; }
