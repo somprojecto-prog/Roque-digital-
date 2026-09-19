@@ -155,6 +155,7 @@
         <a data-tab="categorias" onclick="return mgrTab(event,'categorias')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg></span> Categorias</a>
         <a data-tab="stock" onclick="return mgrTab(event,'stock')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></span> Inventário</a>
         <a data-tab="avaliacoes" onclick="return mgrTab(event,'avaliacoes')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"/></svg></span> Avaliações</a>
+        <a data-tab="depoimentos" onclick="return mgrTab(event,'depoimentos')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Depoimentos</a>
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Vendas</div>
@@ -259,9 +260,33 @@
 
       <!-- ========== AVALIAÇÕES ========== -->
       <div class="mgr-panel" id="mgr-avaliacoes">
-        <h1>Avaliações</h1><p class="mgr-sub">Avaliações deixadas pelos clientes em cada produto. Só aqui é possível apagar uma avaliação.</p>
+        <h1>Avaliações</h1><p class="mgr-sub">Avaliações deixadas pelos clientes em cada produto. Só aqui é possível apagar uma avaliação. Também podes destacar uma delas como depoimento na página inicial.</p>
         <div class="panel" style="padding:0; overflow-x:auto;">
           <table class="mgr-table" id="avaliacoesTable"><tr><th>Produto</th><th>Cliente</th><th>Estrelas</th><th>Comentário</th><th>Data</th><th></th></tr></table>
+        </div>
+      </div>
+
+      <!-- ========== DEPOIMENTOS ========== -->
+      <div class="mgr-panel" id="mgr-depoimentos">
+        <h1>Depoimentos</h1><p class="mgr-sub">Aparecem na secção "O que dizem os nossos clientes" da página inicial. Podes escrever um à mão ou destacar uma avaliação real no separador Avaliações.</p>
+        <div class="panel" style="max-width:480px; margin-bottom:18px;">
+          <div class="field-row"><label>Nome</label><input type="text" id="dep-autor" placeholder="Ex: Beatriz S."></div>
+          <div class="field-row"><label>Localidade (opcional)</label><input type="text" id="dep-local" placeholder="Ex: Luanda"></div>
+          <div class="field-row"><label>Estrelas</label>
+            <select id="dep-estrelas">
+              <option value="5">★★★★★ (5)</option>
+              <option value="4">★★★★☆ (4)</option>
+              <option value="3">★★★☆☆ (3)</option>
+              <option value="2">★★☆☆☆ (2)</option>
+              <option value="1">★☆☆☆☆ (1)</option>
+            </select>
+          </div>
+          <div class="field-row"><label>Texto</label><textarea id="dep-texto" rows="3" placeholder="O que o cliente disse..."></textarea></div>
+          <button class="btn btn-primary" onclick="adicionarDepoimento()">+ Adicionar depoimento</button>
+          <p id="depoimentoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
+        </div>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="depoimentosTable"><tr><th>Nome</th><th>Estrelas</th><th>Texto</th><th></th></tr></table>
         </div>
       </div>
 
@@ -315,6 +340,22 @@
           <div class="field-row"><label>Cor de destaque</label><input id="cf-cor-destaque" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
           <div class="field-row"><label>Cor de destaque (clara)</label><input id="cf-cor-destaque-clara" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
           <div class="field-row"><label>Cor de fundo</label><input id="cf-cor-fundo" type="color" style="height:40px; padding:4px; cursor:pointer;"></div>
+        </div>
+
+        <div class="panel" style="margin-top:16px;">
+          <h3>Vídeo de destaque</h3>
+          <p class="mgr-sub" style="margin-bottom:14px; color:var(--text-soft);">É a secção com vídeo perto do fim da página inicial (ex: "iPhone 17 Pro").</p>
+          <div class="field" style="margin-bottom:14px;">
+            <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Vídeo</label>
+            <div class="image-upload-box" onclick="document.getElementById('cf-destaque-video-file').click()" style="min-height:60px;">
+              <span id="cf-destaque-video-placeholder">Toque para escolher um vídeo</span>
+            </div>
+            <input type="file" id="cf-destaque-video-file" accept="video/*" style="display:none;" onchange="handleVideoUpload(this)">
+            <p class="upload-status" id="cf-destaque-video-status"></p>
+          </div>
+          <div class="field-row"><label>Nome do produto</label><input id="cf-destaque-titulo" type="text" placeholder="Ex: iPhone 17 Pro"></div>
+          <div class="field-row"><label>Descrição</label><textarea id="cf-destaque-descricao" rows="2"></textarea></div>
+          <div class="field-row"><label>Preço (Kz)</label><input id="cf-destaque-preco" type="number" min="0" step="1"></div>
         </div>
         <button class="btn btn-gold" style="margin-top:16px;" onclick="guardarConteudo()">Guardar alterações</button>
         <p id="conteudoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
@@ -491,6 +532,7 @@
     carregarEquipa();
     carregarConteudo();
     carregarAvaliacoesManager();
+    carregarDepoimentos();
   }
 
   /* ================= INÍCIO (barras da página inicial) ================= */
@@ -741,6 +783,7 @@
   }
 
   /* ================= AVALIAÇÕES (só aqui se pode apagar) ================= */
+  let cacheAvaliacoes = [];
   async function carregarAvaliacoesManager(){
     const tbody = document.getElementById('avaliacoesTable');
     if(!tbody) return;
@@ -755,6 +798,7 @@
       tbody.innerHTML += `<tr><td colspan="6" class="empty-state">Ainda não há avaliações.</td></tr>`;
       return;
     }
+    cacheAvaliacoes = data;
     data.forEach(r=>{
       const produto = (r.products && r.products.name) || '—';
       const cliente = (r.customers && r.customers.full_name) || 'Cliente';
@@ -766,9 +810,27 @@
         <td style="color:var(--gold); white-space:nowrap;">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</td>
         <td style="max-width:260px;">${comentario}</td>
         <td style="white-space:nowrap;">${data_}</td>
-        <td class="row-actions"><button class="danger" onclick="apagarAvaliacaoManager('${r.id}')">Apagar</button></td>
+        <td class="row-actions" style="white-space:nowrap;">
+          ${r.comment ? `<button style="color:var(--gold);" onclick="destacarComoDepoimento('${r.id}')">Destacar</button>` : ''}
+          <button class="danger" onclick="apagarAvaliacaoManager('${r.id}')">Apagar</button>
+        </td>
       </tr>`;
     });
+  }
+  async function destacarComoDepoimento(reviewId){
+    const r = cacheAvaliacoes.find(x=> x.id === reviewId);
+    if(!r) return;
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
+    const payload = {
+      author: (r.customers && r.customers.full_name) || 'Cliente',
+      location: null,
+      stars: r.rating,
+      text: r.comment
+    };
+    const { error } = await supabase.from('testimonials').insert([payload]);
+    if(error){ showToast('Erro ao destacar: ' + error.message); return; }
+    showToast('Avaliação destacada como depoimento!');
+    carregarDepoimentos();
   }
   async function apagarAvaliacaoManager(id){
     if(!confirm('Apagar esta avaliação definitivamente?')) return;
@@ -778,6 +840,54 @@
     showToast('Avaliação apagada.');
     carregarAvaliacoesManager();
   }
+
+  /* ================= DEPOIMENTOS (página inicial) ================= */
+  async function carregarDepoimentos(){
+    const tbody = document.getElementById('depoimentosTable');
+    if(!tbody) return;
+    if(!supabase || modoDemo) return;
+    const { data, error } = await supabase.from('testimonials').select('*').order('created_at', { ascending:false });
+    tbody.innerHTML = '<tr><th>Nome</th><th>Estrelas</th><th>Texto</th><th></th></tr>';
+    if(error || !data || !data.length){
+      tbody.innerHTML += `<tr><td colspan="4" class="empty-state">Ainda não há depoimentos — a página inicial mostra os 3 exemplos fixos.</td></tr>`;
+      return;
+    }
+    data.forEach(t=>{
+      const nome = t.location ? `${t.author}, ${t.location}` : t.author;
+      tbody.innerHTML += `<tr>
+        <td>${nome}</td>
+        <td style="color:var(--gold); white-space:nowrap;">${'★'.repeat(t.stars)}${'☆'.repeat(5-t.stars)}</td>
+        <td style="max-width:320px;">${(t.text||'').replace(/</g,'&lt;')}</td>
+        <td class="row-actions"><button class="danger" onclick="apagarDepoimento('${t.id}')">Apagar</button></td>
+      </tr>`;
+    });
+  }
+  async function adicionarDepoimento(){
+    const statusEl = document.getElementById('depoimentoStatus');
+    const autor = document.getElementById('dep-autor').value.trim();
+    const local = document.getElementById('dep-local').value.trim();
+    const texto = document.getElementById('dep-texto').value.trim();
+    const estrelas = Number(document.getElementById('dep-estrelas').value);
+    if(!autor || !texto){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Preenche pelo menos o nome e o texto.'; return; }
+    if(!supabase || modoDemo){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Liga o Supabase para guardar depoimentos.'; return; }
+    const { error } = await supabase.from('testimonials').insert([{ author:autor, location: local || null, stars: estrelas, text: texto }]);
+    if(error){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Erro: ' + error.message; return; }
+    statusEl.style.color='var(--success)';
+    statusEl.textContent = 'Depoimento adicionado!';
+    document.getElementById('dep-autor').value = '';
+    document.getElementById('dep-local').value = '';
+    document.getElementById('dep-texto').value = '';
+    carregarDepoimentos();
+  }
+  async function apagarDepoimento(id){
+    if(!confirm('Apagar este depoimento?')) return;
+    if(!supabase || modoDemo) return;
+    const { error } = await supabase.from('testimonials').delete().eq('id', id);
+    if(error){ showToast('Erro ao apagar: ' + error.message); return; }
+    showToast('Depoimento apagado.');
+    carregarDepoimentos();
+  }
+
   async function toggleAtivoProduto(id, novo){
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
     await supabase.from('products').update({ active: novo }).eq('id', id);
@@ -1086,10 +1196,29 @@
     document.getElementById('cf-cor-destaque').value = data.cor_destaque || '#F5A623';
     document.getElementById('cf-cor-destaque-clara').value = data.cor_destaque_clara || '#FFC65C';
     document.getElementById('cf-cor-fundo').value = data.cor_fundo || '#080B14';
+    document.getElementById('cf-destaque-titulo').value = data.destaque_titulo || '';
+    document.getElementById('cf-destaque-descricao').value = data.destaque_descricao || '';
+    document.getElementById('cf-destaque-preco').value = data.destaque_preco || '';
+    document.getElementById('cf-destaque-video-file').dataset.url = data.destaque_video_url || '';
+    document.getElementById('cf-destaque-video-placeholder').textContent = data.destaque_video_url ? 'Vídeo carregado — toque para trocar' : 'Toque para escolher um vídeo';
 
     if(data.logo_url){ document.getElementById('img-logo-preview').src = data.logo_url; document.getElementById('img-logo-preview').style.display='block'; document.getElementById('img-logo-placeholder').style.display='none'; }
     heroImagensAtuais = Array.isArray(data.hero_images) ? data.hero_images : [];
     renderHeroImagesGrid();
+  }
+  async function handleVideoUpload(inputEl){
+    const file = inputEl.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById('cf-destaque-video-status');
+    const placeholder = document.getElementById('cf-destaque-video-placeholder');
+    if(!supabase || modoDemo){ statusEl.textContent = 'Liga o Supabase para enviar vídeos.'; return; }
+    statusEl.textContent = 'A enviar vídeo... pode demorar um pouco.';
+    try{
+      const url = await uploadImagem(file);
+      inputEl.dataset.url = url;
+      placeholder.textContent = 'Vídeo carregado — toque para trocar';
+      statusEl.textContent = 'Vídeo enviado.';
+    }catch(err){ console.error(err); statusEl.textContent = 'Erro ao enviar vídeo: ' + err.message; }
   }
   async function guardarConteudo(){
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar o conteúdo.'); return; }
@@ -1107,7 +1236,11 @@
       redes_facebook: document.getElementById('cf-facebook').value.trim() || null,
       cor_destaque: document.getElementById('cf-cor-destaque').value || null,
       cor_destaque_clara: document.getElementById('cf-cor-destaque-clara').value || null,
-      cor_fundo: document.getElementById('cf-cor-fundo').value || null
+      cor_fundo: document.getElementById('cf-cor-fundo').value || null,
+      destaque_titulo: document.getElementById('cf-destaque-titulo').value.trim() || null,
+      destaque_descricao: document.getElementById('cf-destaque-descricao').value.trim() || null,
+      destaque_preco: document.getElementById('cf-destaque-preco').value ? Number(document.getElementById('cf-destaque-preco').value) : null,
+      destaque_video_url: document.getElementById('cf-destaque-video-file').dataset.url || null
     };
     const { error } = await supabase.from('site_settings').update(payload).eq('id',1);
     const statusEl = document.getElementById('conteudoStatus');
