@@ -161,6 +161,7 @@
         <div class="mgr-nav-label">Vendas</div>
         <a data-tab="encomendas" onclick="return mgrTab(event,'encomendas')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12v19l-3-2-3 2-3-2-3 2V2Z"/><path d="M9 8h6M9 12h6"/></svg></span> Encomendas</a>
         <a data-tab="clientes" onclick="return mgrTab(event,'clientes')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 4-5.5 7-5.5S18 16.5 19 20"/></svg></span> Clientes</a>
+        <a data-tab="pagamentos" onclick="return mgrTab(event,'pagamentos')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span> Pagamentos</a>
       </div>
       <div class="mgr-nav-group">
         <div class="mgr-nav-label">Conteúdo da loja</div>
@@ -201,6 +202,15 @@
         <div class="panel">
           <h3>Últimas encomendas</h3>
           <table class="mgr-table" id="dashOrdersTable"><tr><th>Pedido</th><th>Cliente</th><th>Valor</th><th>Estado</th></tr></table>
+        </div>
+
+        <div class="panel" style="margin-top:16px; border-color:var(--danger);">
+          <h3 style="color:var(--danger);">⚠️ Zona de perigo</h3>
+          <p class="mgr-sub" style="margin-bottom:14px;">Apaga todas as encomendas e limpa os números da contabilidade (total vendido, nº de encomendas e o histórico aqui em cima). Os produtos e categorias não são afetados. Esta ação não pode ser desfeita.</p>
+          <label class="toggle-row" style="margin-bottom:14px;"><input type="checkbox" id="limparClientesTambem" style="width:auto;"> Apagar também os clientes registados</label>
+          <br>
+          <button class="btn" style="background:var(--danger); color:#fff;" onclick="limparContabilidade()">Limpar contabilidade</button>
+          <p id="limparStatus" style="font-size:13px; margin-top:10px;"></p>
         </div>
       </div>
 
@@ -315,6 +325,23 @@
         <h1>Clientes</h1><p class="mgr-sub">Pessoas que já fizeram encomendas na loja.</p>
         <div class="panel" style="padding:0; overflow-x:auto;">
           <table class="mgr-table" id="clientesTable"><tr><th>Nome</th><th>Telefone</th><th>Morada</th><th>Encomendas</th></tr></table>
+        </div>
+      </div>
+
+      <!-- ========== PAGAMENTOS ========== -->
+      <div class="mgr-panel" id="mgr-pagamentos">
+        <h1>Formas de pagamento</h1><p class="mgr-sub">Aparecem no carrinho, no passo de finalizar compra. Podes ter quantas quiseres.</p>
+        <div class="panel" style="max-width:520px; margin-bottom:18px;">
+          <input type="hidden" id="pg-edit-id">
+          <div class="field-row"><label>Nome</label><input type="text" id="pg-nome" placeholder="Ex: Pagamento na entrega"></div>
+          <div class="field-row"><label>Instruções mostradas ao cliente</label><textarea id="pg-instrucoes" rows="2" placeholder="Ex: Paga em dinheiro ou Multicaixa quando a encomenda chegar."></textarea></div>
+          <label class="toggle-row" style="margin-bottom:10px;"><input type="checkbox" id="pg-comprovativo" style="width:auto;"> Pedir comprovativo de pagamento (ex: transferências)</label>
+          <button class="btn btn-primary" onclick="guardarMetodoPagamento()" id="pg-btn-guardar">+ Adicionar forma de pagamento</button>
+          <button class="btn btn-outline" onclick="cancelarEdicaoPagamento()" id="pg-btn-cancelar" style="display:none;">Cancelar edição</button>
+          <p id="pagamentoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
+        </div>
+        <div class="panel" style="padding:0; overflow-x:auto;">
+          <table class="mgr-table" id="pagamentosTable"><tr><th>Nome</th><th>Instruções</th><th>Comprovativo?</th><th>Ativo</th><th></th></tr></table>
         </div>
       </div>
 
@@ -545,6 +572,7 @@
     carregarConteudo();
     carregarAvaliacoesManager();
     carregarDepoimentos();
+    carregarMetodosPagamento();
   }
 
   /* ================= INÍCIO (barras da página inicial) ================= */
@@ -910,6 +938,110 @@
     if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
     await supabase.from('products').delete().eq('id', id);
     carregarProdutos();
+  }
+
+  /* ================= FORMAS DE PAGAMENTO ================= */
+  let cacheMetodosPagamento = [];
+  async function carregarMetodosPagamento(){
+    const tbody = document.getElementById('pagamentosTable');
+    if(!tbody) return;
+    if(!supabase || modoDemo) return;
+    const { data, error } = await supabase.from('payment_methods').select('*').order('created_at', { ascending:true });
+    tbody.innerHTML = '<tr><th>Nome</th><th>Instruções</th><th>Comprovativo?</th><th>Ativo</th><th></th></tr>';
+    if(error || !data || !data.length){
+      tbody.innerHTML += `<tr><td colspan="5" class="empty-state">Ainda não há formas de pagamento — o carrinho usa Multicaixa Express e Transferência bancária por omissão.</td></tr>`;
+      return;
+    }
+    cacheMetodosPagamento = data;
+    data.forEach(m=>{
+      tbody.innerHTML += `<tr>
+        <td>${m.name}</td>
+        <td style="max-width:280px;">${(m.instructions||'').replace(/</g,'&lt;')}</td>
+        <td>${m.requires_proof ? 'Sim' : 'Não'}</td>
+        <td><span class="status-pill ${m.active?'ativo':'inativo'}" style="cursor:pointer;" onclick="toggleAtivoPagamento('${m.id}', ${!m.active})">${m.active?'Ativo':'Inativo'}</span></td>
+        <td class="row-actions">
+          <button onclick="editarMetodoPagamento('${m.id}')">Editar</button>
+          <button class="danger" onclick="apagarMetodoPagamento('${m.id}')">Apagar</button>
+        </td>
+      </tr>`;
+    });
+  }
+  function editarMetodoPagamento(id){
+    const m = cacheMetodosPagamento.find(x=> x.id === id);
+    if(!m) return;
+    document.getElementById('pg-edit-id').value = m.id;
+    document.getElementById('pg-nome').value = m.name || '';
+    document.getElementById('pg-instrucoes').value = m.instructions || '';
+    document.getElementById('pg-comprovativo').checked = !!m.requires_proof;
+    document.getElementById('pg-btn-guardar').textContent = 'Guardar alterações';
+    document.getElementById('pg-btn-cancelar').style.display = 'inline-flex';
+    document.getElementById('mgr-pagamentos').scrollIntoView({ behavior:'smooth' });
+  }
+  function cancelarEdicaoPagamento(){
+    document.getElementById('pg-edit-id').value = '';
+    document.getElementById('pg-nome').value = '';
+    document.getElementById('pg-instrucoes').value = '';
+    document.getElementById('pg-comprovativo').checked = false;
+    document.getElementById('pg-btn-guardar').textContent = '+ Adicionar forma de pagamento';
+    document.getElementById('pg-btn-cancelar').style.display = 'none';
+  }
+  async function guardarMetodoPagamento(){
+    const statusEl = document.getElementById('pagamentoStatus');
+    const id = document.getElementById('pg-edit-id').value;
+    const nome = document.getElementById('pg-nome').value.trim();
+    const instrucoes = document.getElementById('pg-instrucoes').value.trim();
+    const comprovativo = document.getElementById('pg-comprovativo').checked;
+    if(!nome){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Escreve o nome da forma de pagamento.'; return; }
+    if(!supabase || modoDemo){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Liga o Supabase para guardar.'; return; }
+
+    const payload = { name:nome, instructions:instrucoes, requires_proof:comprovativo };
+    const { error } = id
+      ? await supabase.from('payment_methods').update(payload).eq('id', id)
+      : await supabase.from('payment_methods').insert([{ ...payload, active:true }]);
+
+    if(error){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Erro: ' + error.message; return; }
+    statusEl.style.color='var(--success)';
+    statusEl.textContent = id ? 'Alterações guardadas!' : 'Forma de pagamento adicionada!';
+    cancelarEdicaoPagamento();
+    carregarMetodosPagamento();
+  }
+  async function toggleAtivoPagamento(id, novo){
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para guardar alterações.'); return; }
+    await supabase.from('payment_methods').update({ active: novo }).eq('id', id);
+    carregarMetodosPagamento();
+  }
+  async function apagarMetodoPagamento(id){
+    if(!confirm('Apagar esta forma de pagamento?')) return;
+    if(!supabase || modoDemo) return;
+    const { error } = await supabase.from('payment_methods').delete().eq('id', id);
+    if(error){ showToast('Erro ao apagar: ' + error.message); return; }
+    showToast('Forma de pagamento apagada.');
+    carregarMetodosPagamento();
+  }
+
+  /* ================= ZONA DE PERIGO: limpar contabilidade ================= */
+  async function limparContabilidade(){
+    if(!supabase || modoDemo){ showToast('Liga o Supabase para fazer isto.'); return; }
+    const confirmacao = prompt('Isto vai apagar TODAS as encomendas e não pode ser desfeito.\nEscreve APAGAR para confirmar:');
+    if(confirmacao !== 'APAGAR') return;
+
+    const statusEl = document.getElementById('limparStatus');
+    const apagarClientes = document.getElementById('limparClientesTambem').checked;
+    statusEl.style.color = 'var(--text-soft)';
+    statusEl.textContent = 'A limpar...';
+    try{
+      await supabase.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if(apagarClientes){
+        await supabase.from('customers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+      statusEl.style.color = 'var(--success)';
+      statusEl.textContent = 'Contabilidade limpa!';
+      carregarEncomendas();
+    }catch(e){
+      statusEl.style.color = 'var(--danger)';
+      statusEl.textContent = 'Erro ao limpar: ' + e.message;
+    }
   }
 
   let currentProdutoId = null;
