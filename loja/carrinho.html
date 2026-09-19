@@ -94,8 +94,8 @@
 
     <label style="display:block; font-size:12.5px; font-weight:700; color:var(--text-soft); margin-bottom:8px;">Método de pagamento</label>
     <div class="pay-options" id="payOptions">
-      <div class="pay-opt selected" data-instructions="Referência Multicaixa Express será enviada por WhatsApp assim que confirmares o pedido." data-proof="0" onclick="selecionarPagamento(this)">Multicaixa Express</div>
-      <div class="pay-opt" data-instructions="IBAN: AO06 0000 0000 0000 0000 0000 0 — Banco de Roque Digital. Envia o comprovativo abaixo ou por WhatsApp." data-proof="1" onclick="selecionarPagamento(this)">Transferência bancária</div>
+      <div class="pay-opt selected" data-instructions="Referência Multicaixa Express será enviada por WhatsApp assim que confirmares o pedido." data-proof-mode="none" onclick="selecionarPagamento(this)">Multicaixa Express</div>
+      <div class="pay-opt" data-instructions="IBAN: AO06 0000 0000 0000 0000 0000 0 — Banco de Roque Digital. Envia o comprovativo abaixo." data-proof-mode="required" onclick="selecionarPagamento(this)">Transferência bancária</div>
     </div>
 
     <div id="payInstructions" style="font-size:12.5px; color:var(--text-soft); background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:16px;">
@@ -103,7 +103,7 @@
     </div>
 
     <div class="field" id="proofField" style="display:none;">
-      <label>Comprovativo de pagamento (opcional agora, podes enviar depois por WhatsApp)</label>
+      <label id="proofLabel">Comprovativo de pagamento</label>
       <input type="file" id="ckProof" accept="image/*">
       <p id="proofStatus" style="font-size:11.5px; color:var(--text-soft); margin-top:6px;"></p>
     </div>
@@ -150,14 +150,23 @@
   }
 
   let metodoPagamento = 'Multicaixa Express';
-  let metodoRequerComprovativo = false;
+  let metodoProofMode = 'none'; // 'none' | 'optional' | 'required'
   function selecionarPagamento(el){
     document.querySelectorAll('.pay-opt').forEach(o=> o.classList.remove('selected'));
     el.classList.add('selected');
     metodoPagamento = el.textContent.trim();
-    metodoRequerComprovativo = el.dataset.proof === '1';
+    metodoProofMode = el.dataset.proofMode || 'none';
     document.getElementById('payInstructions').textContent = el.dataset.instructions || '';
-    document.getElementById('proofField').style.display = metodoRequerComprovativo ? 'block' : 'none';
+    const proofField = document.getElementById('proofField');
+    if(metodoProofMode === 'none'){
+      proofField.style.display = 'none';
+    } else {
+      proofField.style.display = 'block';
+      document.getElementById('proofLabel').textContent = el.dataset.proofLabel ||
+        (metodoProofMode === 'required'
+          ? 'Comprovativo de pagamento (obrigatório)'
+          : 'Comprovativo de pagamento (opcional agora, podes enviar depois por WhatsApp)');
+    }
   }
 
   async function carregarFormasPagamento(){
@@ -166,14 +175,22 @@
       const { data } = await supabase.from('payment_methods').select('*').eq('active', true).order('created_at', { ascending:true });
       if(!data || !data.length) return; // mantém as 2 opções fixas como reserva
       const wrap = document.getElementById('payOptions');
-      wrap.innerHTML = data.map((m,i)=> `<div class="pay-opt${i===0?' selected':''}" data-instructions="${(m.instructions||'').replace(/"/g,'&quot;')}" data-proof="${m.requires_proof?1:0}" onclick="selecionarPagamento(this)">${m.name}</div>`).join('');
+      wrap.innerHTML = data.map((m,i)=> `<div class="pay-opt${i===0?' selected':''}" data-instructions="${(m.instructions||'').replace(/"/g,'&quot;')}" data-proof-mode="${m.proof_mode||'none'}" data-proof-label="${(m.proof_label||'').replace(/"/g,'&quot;')}" onclick="selecionarPagamento(this)">${m.name}</div>`).join('');
       wrap.style.gridTemplateColumns = data.length > 2 ? 'repeat(auto-fit, minmax(140px,1fr))' : '1fr 1fr';
       selecionarPagamento(wrap.querySelector('.pay-opt'));
     }catch(e){ console.warn('Não foi possível carregar as formas de pagamento.', e); }
   }
   carregarFormasPagamento();
 
-  const DELIVERY_FEE = 2000;
+  let DELIVERY_FEE = 2000;
+  async function carregarTaxaEntrega(){
+    if(!supabase) return;
+    try{
+      const { data } = await supabase.from('site_settings').select('taxa_entrega').eq('id',1).single();
+      if(data && data.taxa_entrega != null){ DELIVERY_FEE = Number(data.taxa_entrega); render(); }
+    }catch(e){ console.warn('Não foi possível carregar a taxa de entrega.', e); }
+  }
+  carregarTaxaEntrega();
 
   function render(){
     const cart = RD.getCart();
@@ -246,6 +263,13 @@
       return;
     }
 
+    const proofInputCheck = document.getElementById('ckProof');
+    if(metodoProofMode === 'required' && !proofInputCheck.files[0]){
+      RD.showToast('Anexa o comprovativo de pagamento para continuar');
+      proofInputCheck.scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+
     const btn = document.querySelector('#checkoutForm .btn-gold');
     const btnTextoOriginal = btn.textContent;
     btn.disabled = true; btn.textContent = 'A enviar...';
@@ -276,7 +300,7 @@
         // Envia o comprovativo de pagamento, se a pessoa escolheu um ficheiro
         let proofUrl = null;
         const proofInput = document.getElementById('ckProof');
-        if(metodoRequerComprovativo && proofInput.files[0]){
+        if(metodoProofMode !== 'none' && proofInput.files[0]){
           try{
             const file = proofInput.files[0];
             const nomeFicheiro = `comprovativos/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${(file.name.split('.').pop()||'jpg')}`;
