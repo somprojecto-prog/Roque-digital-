@@ -335,7 +335,14 @@
           <input type="hidden" id="pg-edit-id">
           <div class="field-row"><label>Nome</label><input type="text" id="pg-nome" placeholder="Ex: Pagamento na entrega"></div>
           <div class="field-row"><label>Instruções mostradas ao cliente</label><textarea id="pg-instrucoes" rows="2" placeholder="Ex: Paga em dinheiro ou Multicaixa quando a encomenda chegar."></textarea></div>
-          <label class="toggle-row" style="margin-bottom:10px;"><input type="checkbox" id="pg-comprovativo" style="width:auto;"> Pedir comprovativo de pagamento (ex: transferências)</label>
+          <div class="field-row"><label>Comprovativo de pagamento</label>
+            <select id="pg-proof-mode">
+              <option value="none">Não pede comprovativo</option>
+              <option value="optional">Pede comprovativo (opcional)</option>
+              <option value="required">Pede comprovativo (obrigatório)</option>
+            </select>
+          </div>
+          <div class="field-row"><label>Texto do comprovativo (opcional)</label><input type="text" id="pg-proof-label" placeholder="Ex: Anexa aqui o comprovativo da transferência"></div>
           <button class="btn btn-primary" onclick="guardarMetodoPagamento()" id="pg-btn-guardar">+ Adicionar forma de pagamento</button>
           <button class="btn btn-outline" onclick="cancelarEdicaoPagamento()" id="pg-btn-cancelar" style="display:none;">Cancelar edição</button>
           <p id="pagamentoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
@@ -361,6 +368,11 @@
           <div class="field-row"><label>Instagram (link)</label><input id="cf-instagram" type="text"></div>
           <div class="field-row"><label>Facebook (link)</label><input id="cf-facebook" type="text"></div>
         </div>
+        <div class="panel" style="margin-top:16px;">
+          <h3>Entrega</h3>
+          <div class="field-row"><label>Taxa de entrega (Kz)</label><input id="cf-taxa-entrega" type="number" min="0" step="1" placeholder="2000"></div>
+        </div>
+
         <div class="panel" style="margin-top:16px;">
           <h3>Cores do site</h3>
           <p class="mgr-sub" style="margin-bottom:14px; color:var(--text-soft);">Muda a paleta de cores usada em toda a loja (botões, destaques e fundo).</p>
@@ -957,7 +969,7 @@
       tbody.innerHTML += `<tr>
         <td>${m.name}</td>
         <td style="max-width:280px;">${(m.instructions||'').replace(/</g,'&lt;')}</td>
-        <td>${m.requires_proof ? 'Sim' : 'Não'}</td>
+        <td>${m.proof_mode === 'required' ? 'Obrigatório' : (m.proof_mode === 'optional' ? 'Opcional' : 'Não')}</td>
         <td><span class="status-pill ${m.active?'ativo':'inativo'}" style="cursor:pointer;" onclick="toggleAtivoPagamento('${m.id}', ${!m.active})">${m.active?'Ativo':'Inativo'}</span></td>
         <td class="row-actions">
           <button onclick="editarMetodoPagamento('${m.id}')">Editar</button>
@@ -972,7 +984,8 @@
     document.getElementById('pg-edit-id').value = m.id;
     document.getElementById('pg-nome').value = m.name || '';
     document.getElementById('pg-instrucoes').value = m.instructions || '';
-    document.getElementById('pg-comprovativo').checked = !!m.requires_proof;
+    document.getElementById('pg-proof-mode').value = m.proof_mode || 'none';
+    document.getElementById('pg-proof-label').value = m.proof_label || '';
     document.getElementById('pg-btn-guardar').textContent = 'Guardar alterações';
     document.getElementById('pg-btn-cancelar').style.display = 'inline-flex';
     document.getElementById('mgr-pagamentos').scrollIntoView({ behavior:'smooth' });
@@ -981,7 +994,8 @@
     document.getElementById('pg-edit-id').value = '';
     document.getElementById('pg-nome').value = '';
     document.getElementById('pg-instrucoes').value = '';
-    document.getElementById('pg-comprovativo').checked = false;
+    document.getElementById('pg-proof-mode').value = 'none';
+    document.getElementById('pg-proof-label').value = '';
     document.getElementById('pg-btn-guardar').textContent = '+ Adicionar forma de pagamento';
     document.getElementById('pg-btn-cancelar').style.display = 'none';
   }
@@ -990,11 +1004,12 @@
     const id = document.getElementById('pg-edit-id').value;
     const nome = document.getElementById('pg-nome').value.trim();
     const instrucoes = document.getElementById('pg-instrucoes').value.trim();
-    const comprovativo = document.getElementById('pg-comprovativo').checked;
+    const proofMode = document.getElementById('pg-proof-mode').value;
+    const proofLabel = document.getElementById('pg-proof-label').value.trim();
     if(!nome){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Escreve o nome da forma de pagamento.'; return; }
     if(!supabase || modoDemo){ statusEl.style.color='var(--danger)'; statusEl.textContent = 'Liga o Supabase para guardar.'; return; }
 
-    const payload = { name:nome, instructions:instrucoes, requires_proof:comprovativo };
+    const payload = { name:nome, instructions:instrucoes, proof_mode:proofMode, proof_label: proofLabel || null };
     const { error } = id
       ? await supabase.from('payment_methods').update(payload).eq('id', id)
       : await supabase.from('payment_methods').insert([{ ...payload, active:true }]);
@@ -1337,6 +1352,7 @@
     document.getElementById('cf-morada').value = data.contacto_morada || '';
     document.getElementById('cf-instagram').value = data.redes_instagram || '';
     document.getElementById('cf-facebook').value = data.redes_facebook || '';
+    document.getElementById('cf-taxa-entrega').value = data.taxa_entrega != null ? data.taxa_entrega : 2000;
     document.getElementById('cf-cor-destaque').value = data.cor_destaque || '#F5A623';
     document.getElementById('cf-cor-destaque-clara').value = data.cor_destaque_clara || '#FFC65C';
     document.getElementById('cf-cor-fundo').value = data.cor_fundo || '#080B14';
@@ -1381,6 +1397,7 @@
       contacto_morada: document.getElementById('cf-morada').value.trim() || null,
       redes_instagram: document.getElementById('cf-instagram').value.trim() || null,
       redes_facebook: document.getElementById('cf-facebook').value.trim() || null,
+      taxa_entrega: document.getElementById('cf-taxa-entrega').value ? Number(document.getElementById('cf-taxa-entrega').value) : null,
       cor_destaque: document.getElementById('cf-cor-destaque').value || null,
       cor_destaque_clara: document.getElementById('cf-cor-destaque-clara').value || null,
       cor_fundo: document.getElementById('cf-cor-fundo').value || null,
