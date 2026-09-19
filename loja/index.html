@@ -414,7 +414,7 @@
 
   <section class="testimonials reveal">
     <div class="section-head"><div><p class="section-eyebrow">Depoimentos</p><h2>⭐ O que dizem os nossos clientes</h2></div></div>
-    <div class="testimonial-grid">
+    <div class="testimonial-grid" id="testimonialGrid">
       <div class="testimonial-card">
         <div class="t-stars">⭐⭐⭐⭐⭐</div>
         <p>"Comprei um perfume e chegou muito bem embalado, dentro do prazo. Vou voltar a comprar com certeza."</p>
@@ -440,9 +440,9 @@
     </div>
     <div class="highlight-info">
       <p class="section-eyebrow" style="margin-bottom:2px;">Destaque</p>
-      <h2>iPhone 17 Pro</h2>
-      <p>Titânio, câmara profissional e o chip mais rápido já criado pela Apple. A perfeição, redesenhada.</p>
-      <div class="price">1 450 000 Kz</div>
+      <h2 class="js-destaque-titulo">iPhone 17 Pro</h2>
+      <p class="js-destaque-descricao">Titânio, câmara profissional e o chip mais rápido já criado pela Apple. A perfeição, redesenhada.</p>
+      <div class="price js-destaque-preco">1 450 000 Kz</div>
     </div>
   </section>
 </main>
@@ -524,7 +524,7 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
 
   let supabase = null;
-  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); atualizarLinkConta(); }
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); carregarProdutos(); RD.applySiteSettings(supabase); RD.loadHomeCategories(supabase); RD.loadTestimonials(supabase); atualizarLinkConta(); }
   catch(e){ console.log("Supabase não ligado — a usar produtos de exemplo."); }
 
   async function atualizarLinkConta(){
