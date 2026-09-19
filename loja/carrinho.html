@@ -9,6 +9,7 @@
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"></noscript>
 <script src="../assets/supabase.js"></script>
 <script src="../assets/store-common.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root{
     --bg:#080B14; --bg-2:#0D1220; --surface:#121A2E;
@@ -124,6 +125,29 @@
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
   let supabase = null;
   try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+  // ---------- EmailJS: envia-te um e-mail (para a tua Gmail) sempre que ----------
+  // ---------- entra uma encomenda nova, mesmo sem abrires o painel.       ----------
+  // A Public Key, Service ID e Template ID são configurados no painel de
+  // gestão, em "Conteúdo do site" → "Notificações por e-mail".
+  let emailjsConfig = null;
+  async function carregarConfigEmailJS(){
+    if(!supabase || !window.emailjs) return;
+    try{
+      const { data } = await supabase.from('site_settings').select('emailjs_public_key, emailjs_service_id, emailjs_template_id').eq('id',1).single();
+      if(data && data.emailjs_public_key && data.emailjs_service_id && data.emailjs_template_id){
+        emailjs.init({ publicKey: data.emailjs_public_key });
+        emailjsConfig = { service: data.emailjs_service_id, template: data.emailjs_template_id };
+      }
+    }catch(e){ console.warn('EmailJS ainda não está configurado no painel.', e); }
+  }
+  carregarConfigEmailJS();
+
+  function enviarEmailNovaEncomenda(dados){
+    if(!window.emailjs || !emailjsConfig) return; // ainda não configurado no painel
+    emailjs.send(emailjsConfig.service, emailjsConfig.template, dados)
+      .catch(err=> console.warn('Não foi possível enviar o e-mail da encomenda.', err));
+  }
 
   let metodoPagamento = 'multicaixa';
   function selecionarPagamento(m){
@@ -267,6 +291,21 @@
         }
       }catch(e){ console.log('Pedido guardado apenas localmente (Supabase indisponível ou tabela incompleta).', e); }
     }
+
+    // Monta a lista de produtos em texto simples, para o e-mail
+    const listaItens = cart.map(i => `• ${i.name} — ${i.qty}x — ${RD.formatKz(i.price * i.qty)}`).join('\n');
+
+    enviarEmailNovaEncomenda({
+      order_number: orderNumber,
+      customer_name: nome,
+      customer_phone: telefone,
+      customer_city: cidade,
+      customer_address: morada || '—',
+      payment_method: metodoPagamento === 'transferencia' ? 'Transferência bancária' : 'Multicaixa Express',
+      items_list: listaItens,
+      delivery_fee: RD.formatKz(DELIVERY_FEE),
+      total: RD.formatKz(total)
+    });
 
     document.getElementById('orderNumberText').textContent = '#' + orderNumber;
     document.getElementById('cartView').innerHTML = '';
