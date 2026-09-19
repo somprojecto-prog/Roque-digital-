@@ -357,6 +357,18 @@
           <div class="field-row"><label>Descrição</label><textarea id="cf-destaque-descricao" rows="2"></textarea></div>
           <div class="field-row"><label>Preço (Kz)</label><input id="cf-destaque-preco" type="number" min="0" step="1"></div>
         </div>
+
+        <div class="panel" style="margin-top:16px;">
+          <h3>Notificações por e-mail (EmailJS)</h3>
+          <p class="mgr-sub" style="margin-bottom:14px; color:var(--text-soft);">
+            Sempre que entra uma encomenda nova, é enviado um e-mail para a tua Gmail. Cria uma conta grátis em
+            <a href="https://www.emailjs.com" target="_blank" rel="noopener" style="color:var(--gold-light);">emailjs.com</a>,
+            liga a tua Gmail como serviço, cria um template, e cola aqui os 3 códigos que o EmailJS te dá.
+          </p>
+          <div class="field-row"><label>Public Key</label><input id="cf-emailjs-key" type="text" placeholder="Ex: a1B2c3D4e5F6g7H8"></div>
+          <div class="field-row"><label>Service ID</label><input id="cf-emailjs-service" type="text" placeholder="Ex: service_xxxxxxx"></div>
+          <div class="field-row"><label>Template ID</label><input id="cf-emailjs-template" type="text" placeholder="Ex: template_xxxxxxx"></div>
+        </div>
         <button class="btn btn-gold" style="margin-top:16px;" onclick="guardarConteudo()">Guardar alterações</button>
         <p id="conteudoStatus" style="font-size:13px; color:var(--success); margin-top:10px;"></p>
       </div>
@@ -1201,6 +1213,9 @@
     document.getElementById('cf-destaque-preco').value = data.destaque_preco || '';
     document.getElementById('cf-destaque-video-file').dataset.url = data.destaque_video_url || '';
     document.getElementById('cf-destaque-video-placeholder').textContent = data.destaque_video_url ? 'Vídeo carregado — toque para trocar' : 'Toque para escolher um vídeo';
+    document.getElementById('cf-emailjs-key').value = data.emailjs_public_key || '';
+    document.getElementById('cf-emailjs-service').value = data.emailjs_service_id || '';
+    document.getElementById('cf-emailjs-template').value = data.emailjs_template_id || '';
 
     if(data.logo_url){ document.getElementById('img-logo-preview').src = data.logo_url; document.getElementById('img-logo-preview').style.display='block'; document.getElementById('img-logo-placeholder').style.display='none'; }
     heroImagensAtuais = Array.isArray(data.hero_images) ? data.hero_images : [];
@@ -1240,7 +1255,10 @@
       destaque_titulo: document.getElementById('cf-destaque-titulo').value.trim() || null,
       destaque_descricao: document.getElementById('cf-destaque-descricao').value.trim() || null,
       destaque_preco: document.getElementById('cf-destaque-preco').value ? Number(document.getElementById('cf-destaque-preco').value) : null,
-      destaque_video_url: document.getElementById('cf-destaque-video-file').dataset.url || null
+      destaque_video_url: document.getElementById('cf-destaque-video-file').dataset.url || null,
+      emailjs_public_key: document.getElementById('cf-emailjs-key').value.trim() || null,
+      emailjs_service_id: document.getElementById('cf-emailjs-service').value.trim() || null,
+      emailjs_template_id: document.getElementById('cf-emailjs-template').value.trim() || null
     };
     const { error } = await supabase.from('site_settings').update(payload).eq('id',1);
     const statusEl = document.getElementById('conteudoStatus');
