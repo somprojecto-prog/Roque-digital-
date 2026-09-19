@@ -177,6 +177,14 @@ const RD = {
         document.querySelectorAll('.js-hero-image').forEach(el=> el.src = data.hero_url);
       }
 
+      // Vídeo de destaque (secção "Destaque" da página inicial)
+      if(data.destaque_video_url){
+        document.querySelectorAll('#highlightVideo').forEach(el=>{ el.src = data.destaque_video_url; el.load(); });
+      }
+      if(data.destaque_titulo) document.querySelectorAll('.js-destaque-titulo').forEach(el=> el.textContent = data.destaque_titulo);
+      if(data.destaque_descricao) document.querySelectorAll('.js-destaque-descricao').forEach(el=> el.textContent = data.destaque_descricao);
+      if(data.destaque_preco) document.querySelectorAll('.js-destaque-preco').forEach(el=> el.textContent = Number(data.destaque_preco).toLocaleString('pt-PT') + ' Kz');
+
       // Cores do site (definidas no painel de gestão, em "Conteúdo do site")
       const raiz = document.documentElement.style;
       if(data.cor_destaque) raiz.setProperty('--gold', data.cor_destaque);
@@ -304,6 +312,28 @@ const RD = {
   },
   statusStep(status){
     return this.ORDER_STATUSES.indexOf(status);
+  },
+
+  // ---------- Depoimentos da página inicial ----------
+  // Lê a tabela `testimonials` (geridas no painel, incluindo avaliações de
+  // produtos "destacadas" a partir do separador Avaliações). Se estiver
+  // vazia ou a tabela ainda não existir, mantém os 3 cartões fixos do HTML.
+  async loadTestimonials(supabaseClient){
+    const grid = document.getElementById('testimonialGrid');
+    if(!grid || !supabaseClient) return;
+    try{
+      const { data, error } = await supabaseClient.from('testimonials').select('*').order('created_at', { ascending:false }).limit(6);
+      if(error || !data || !data.length) return; // mantém os depoimentos fixos como reserva
+      grid.innerHTML = data.map(t=>{
+        const estrelas = '⭐'.repeat(Math.max(1, Math.min(5, t.stars || 5)));
+        const local = t.location ? `, ${t.location}` : '';
+        return `<div class="testimonial-card">
+          <div class="t-stars">${estrelas}</div>
+          <p>"${t.text}"</p>
+          <div class="t-author">— ${t.author}${local}</div>
+        </div>`;
+      }).join('');
+    }catch(e){ console.warn('Não foi possível carregar os depoimentos.', e); }
   }
 };
 
