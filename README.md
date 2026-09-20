@@ -64,7 +64,15 @@ npm run dev
 - `site_settings.emailjs_*` está preenchido no Manager, senão o email de
   notificação simplesmente não é enviado (não bloqueia a encomenda)
 
-### 🚧 Fase 4 — Manager (em curso)
+### ✅ Fase 4 — Manager (completo)
+
+**Nota sobre o signup do Manager:** não tive acesso ao
+`manager/signup.html` nem ao SQL dos triggers (`fix-signup-trigger.sql`)
+do teu parceiro — a página `/manager/signup` está construída a partir do
+que o README e o `dashboard.html` descrevem (envia `role` nos metadados
+do `signUp`, para o trigger criar o `profile` sozinho). Testa com
+cuidado a criação da primeira conta Admin; se o trigger esperar um
+formato diferente, diz-me e ajusto.
 
 **Feito (4a):**
 - `/manager/login` e `/manager/signup` — autenticação separada da loja,
@@ -78,17 +86,29 @@ npm run dev
   a 1ª é capa/a 2ª é hover), toggle ativo/inativo, apagar
 - `/manager/categorias` — CRUD com upload de imagem
 
-**Por fazer (4b — stubs "em breve" já criados, só falta o conteúdo):**
-Inventário, Avaliações, Depoimentos, Encomendas (com histórico de
-estado), Clientes, Pagamentos, Início (curadoria das barras da home),
-Textos do site (`site_settings`), Imagens, Equipa (gerir roles)
+**Feito (4b):**
+- `/manager/inventario` — produtos ordenados por stock, com pílula
+  Crítico/Normal
+- `/manager/avaliacoes` — lista de `product_reviews`, apagar, destacar
+  como depoimento
+- `/manager/depoimentos` — CRUD de `testimonials`
+- `/manager/encomendas` — pesquisa, filtro por estado, mudança de estado
+  inline, modal de detalhe (itens, cliente, comprovativo, histórico via
+  `order_status_history`)
+- `/manager/clientes` — lista com contagem de encomendas por cliente
+- `/manager/pagamentos` — CRUD de `payment_methods` (com modo de edição)
+- `/manager/inicio` — curadoria manual das 3 barras da home
+  (`home_sections` + `home_section_products`), com o mesmo comportamento
+  "sem escolha manual = preenche-se sozinha"
+- `/manager/conteudo` — todos os textos, cores, entrega, vídeo de
+  destaque e configuração do EmailJS (`site_settings`)
+- `/manager/imagens` — logótipo + galeria do hero (`hero_images`)
+- `/manager/equipa` — mudar função de colaboradores (só Admin) e
+  promover clientes registados a colaboradores
 
-**Nota sobre o signup do Manager:** não tive acesso ao `manager/signup.html`
-nem ao SQL dos triggers (`fix-signup-trigger.sql`) do teu parceiro — a
-página `/manager/signup` está construída a partir do que o README e o
-`dashboard.html` descrevem (envia `role` nos metadados do `signUp`, para
-o trigger criar o `profile` sozinho). Testa com cuidado; se o trigger
-esperar um formato diferente, diz-me e ajusto.
+**As 12 secções do Manager estão todas funcionais.** Continua a fazer
+sentido rever com calma (dados reais, permissões RLS, o fluxo de
+signup/trigger) antes de publicar.
 
 ## Paleta
 Tudo (incluindo as páginas que antes estavam em azul-marinho/dourado)

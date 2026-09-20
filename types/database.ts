@@ -6,7 +6,7 @@
  * a migração.
  */
 
-export type ProfileRole = "admin" | "gestor" | "pendente";
+export type ProfileRole = "admin" | "gestor" | "funcionario" | "armazem" | "marketing" | "pendente";
 export type OrderStatus =
   | "recebido"
   | "confirmado"
@@ -150,7 +150,10 @@ export interface SiteSettings {
   cor_fundo_2: string | null;
   cor_superficie: string | null;
   rodape_texto: string | null;
+  contacto_telefone: string | null;
+  contacto_email: string | null;
   contacto_whatsapp: string | null;
+  contacto_morada: string | null;
   redes_instagram: string | null;
   redes_facebook: string | null;
   taxa_entrega: number | null;
