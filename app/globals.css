@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #5a2c0c #170a02;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #170a02;
+}
+
+/* Respeita utilizadores que preferem menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Foco visível e acessível, consistente com a paleta da marca */
+:focus-visible {
+  outline: 2px solid #d9731a;
+  outline-offset: 2px;
+}
+
+/* Balanço suave e contínuo do widget rotativo do Hero. */
+.animate-float {
+  animation: float-bob 4.5s ease-in-out infinite;
+}
+
+@keyframes float-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float {
+    animation: none;
+  }
+}
+
+/* Campos de formulário — usados no checkout e na página de conta. */
+.input-field {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(235, 203, 169, 0.15);
+  background: #170a02;
+  color: #ebcba9;
+  font-size: 14px;
+}
+.input-field:focus {
+  outline: none;
+  border-color: #d9731a;
+}
