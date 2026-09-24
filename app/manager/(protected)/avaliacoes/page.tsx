@@ -14,6 +14,7 @@ interface ReviewRow {
 
 export default function ManagerAvaliacoesPage() {
   const [reviews, setReviews] = useState<ReviewRow[] | null>(null);
+  const [status, setStatus] = useState<{ text: string; ok: boolean } | null>(null);
 
   const load = async () => {
     const { data } = await supabase
@@ -27,6 +28,17 @@ export default function ManagerAvaliacoesPage() {
     load();
   }, []);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Apagar esta avaliação definitivamente?")) return;
+    const { error } = await supabase.from("product_reviews").delete().eq("id", id);
+    if (error) {
+      setStatus({ text: `Erro ao apagar: ${error.message}`, ok: false });
+      return;
+    }
+    setStatus({ text: "Avaliação apagada.", ok: true });
+    load();
+  };
+
   const handleHighlight = async (r: ReviewRow) => {
     const { error } = await supabase.from("testimonials").insert({
       author: r.customers?.full_name || "Cliente",
@@ -34,22 +46,26 @@ export default function ManagerAvaliacoesPage() {
       stars: r.rating,
       text: r.comment,
     });
-    if (!error) alert("Avaliação destacada como depoimento!");
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Apagar esta avaliação definitivamente?")) return;
-    await supabase.from("product_reviews").delete().eq("id", id);
-    load();
+    if (error) {
+      setStatus({ text: `Erro ao destacar: ${error.message}`, ok: false });
+      return;
+    }
+    setStatus({ text: "Avaliação destacada como depoimento!", ok: true });
   };
 
   return (
     <div>
       <h1 className="font-display text-2xl text-creme">Avaliações</h1>
       <p className="mt-1 max-w-xl text-sm text-creme/50">
-        Avaliações deixadas pelos clientes em cada produto. Só aqui é possível apagar uma, ou
-        destacá-la como depoimento na página inicial.
+        Avaliações deixadas pelos clientes em cada produto. Só aqui é possível apagar uma
+        avaliação. Também podes destacar uma delas como depoimento na página inicial.
       </p>
+
+      {status && (
+        <p className={`mt-3 text-sm ${status.ok ? "text-green-400" : "text-red-400"}`}>
+          {status.text}
+        </p>
+      )}
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-cacau/70 bg-cacau-dark">
         <table className="w-full min-w-[720px] text-left text-sm">
@@ -81,7 +97,7 @@ export default function ManagerAvaliacoesPage() {
                 <tr key={r.id} className="border-t border-creme/5 text-creme/80">
                   <td className="p-3">{r.products?.name || "—"}</td>
                   <td className="p-3">{r.customers?.full_name || "Cliente"}</td>
-                  <td className="p-3 whitespace-nowrap text-laranja">
+                  <td className="whitespace-nowrap p-3 text-laranja">
                     {"★".repeat(r.rating)}
                     <span className="text-creme/20">{"★".repeat(5 - r.rating)}</span>
                   </td>
@@ -93,7 +109,10 @@ export default function ManagerAvaliacoesPage() {
                   </td>
                   <td className="whitespace-nowrap p-3 text-right">
                     {r.comment && (
-                      <button onClick={() => handleHighlight(r)} className="mr-3 text-xs text-laranja">
+                      <button
+                        onClick={() => handleHighlight(r)}
+                        className="mr-3 text-xs text-laranja"
+                      >
                         Destacar
                       </button>
                     )}
