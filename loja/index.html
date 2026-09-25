@@ -108,6 +108,23 @@
   .hero-dots span{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.25); transition:.25s; cursor:pointer; }
   .hero-dots span.active{ background:var(--gold); width:20px; border-radius:4px; }
 
+  /* ---------- Duo de produtos em destaque (cartões sobrepostos) ---------- */
+  /* (seletores compostos com .collage-duo para garantir prioridade sobre .prod-card, que vem mais abaixo) */
+  .collage-duo{ position:relative; max-width:340px; height:330px; margin:0 auto 34px; }
+  .collage-duo .collage-card{ position:absolute; width:auto; flex:none; border-radius:20px; overflow:hidden; background:#F4E9DC; border:none; box-shadow:0 20px 40px -16px rgba(0,0,0,0.55); text-decoration:none; display:block; }
+  .collage-duo .collage-card img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .collage-duo .collage-back{ top:0; right:0; width:78%; height:74%; }
+  .collage-duo .collage-front{ bottom:0; left:0; width:58%; height:56%; z-index:2; border:3px solid var(--bg); }
+  .collage-tag{ position:absolute; top:10px; left:10px; background:rgba(8,11,20,0.75); color:var(--gold-light); border:1px solid var(--gold); font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 10px; border-radius:999px; z-index:2; }
+  .collage-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; cursor:pointer; z-index:2; }
+  .collage-add{ position:absolute; bottom:9px; right:9px; width:30px; height:30px; border-radius:50%; background:var(--gold); color:#1a1204; font-size:16px; font-weight:800; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2; box-shadow:0 6px 14px -4px rgba(0,0,0,0.5); }
+  .collage-info{ position:absolute; inset:auto 0 0 0; padding:20px 12px 10px; background:linear-gradient(to top, rgba(8,11,20,0.85), transparent); color:#fff; }
+  .collage-info .name{ font-weight:700; font-size:13px; }
+  .collage-info .price{ font-size:12.5px; color:var(--gold-light); font-weight:700; }
+  @media (max-width:420px){
+    .collage-duo{ max-width:280px; height:280px; }
+  }
+
   /* ---------- Barra de vantagens (gira automaticamente) ---------- */
   .feature-pill{ position:relative; overflow:hidden; background:var(--surface); border:1.5px solid var(--gold); border-radius:999px; margin-bottom:36px; padding:22px 0; }
   .feature-pill:hover .feature-track{ animation-play-state:paused; }
@@ -283,6 +300,8 @@
       <div class="hero-dots" id="heroDots"><span></span></div>
     </div>
   </section>
+
+  <section class="collage-duo reveal" id="collageDuo"></section>
 
   <div class="feature-pill reveal">
     <div class="feature-track">
@@ -603,6 +622,36 @@
     // data de criação, para nunca ficar vazio.
     carregarCarrossel('vendidos', 'vendidosTrack', 'vendidosDots', 'vendas', false);
     carregarCarrossel('novidades', 'novidadesTrack', 'novidadesDots', 'created_at', false, 10, 19);
+
+    carregarDuoDestaque();
+  }
+
+  // Duo de cartões sobrepostos, logo abaixo do banner principal — usa os 2
+  // primeiros produtos dos "Destaques" (ou os mais recentes, se não houver).
+  async function carregarDuoDestaque(){
+    const box = document.getElementById('collageDuo');
+    if(!box) return;
+    let produtos = (window.__rdProducts || []).slice(0, 2);
+    if(produtos.length < 2){
+      const { data } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false }).limit(2);
+      if(data) produtos = data.map(p=>({ id:p.id, name:p.name, brand:p.brand, price:Number(p.price), tag:p.tag, image:p.image_url, imageHover:p.image_url_hover }));
+    }
+    if(produtos.length < 2){ box.style.display = 'none'; return; }
+    const [back, front] = produtos;
+    box.innerHTML = `
+      <a href="produto.html?id=${back.id}" class="collage-card collage-back prod-card" data-id="${back.id}">
+        ${back.tag ? `<span class="collage-tag">${back.tag}</span>` : ''}
+        <div class="collage-fav" onclick="event.preventDefault(); toggleFav(this)">♡</div>
+        ${prodImgMarkup(back.image, back.imageHover, '📦')}
+        <div class="collage-add" onclick="event.preventDefault(); addToCartFromCard(this)">+</div>
+      </a>
+      <a href="produto.html?id=${front.id}" class="collage-card collage-front prod-card" data-id="${front.id}">
+        <span class="collage-tag">${front.tag || 'NOVO'}</span>
+        <div class="collage-fav" onclick="event.preventDefault(); toggleFav(this)">♡</div>
+        ${prodImgMarkup(front.image, front.imageHover, '📦')}
+        <div class="collage-info"><div class="name">${front.name}</div><div class="price">${Number(front.price).toLocaleString('pt-PT')} Kz</div></div>
+        <div class="collage-add" onclick="event.preventDefault(); addToCartFromCard(this)">+</div>
+      </a>`;
   }
 
   async function carregarCarrossel(slug, trackId, dotsId, ordenarPor, ascendente, deInicio, ateFim){
