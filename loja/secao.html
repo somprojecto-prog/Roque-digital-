@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ver tudo — Roque Digital</title>
+<link rel="icon" type="image/png" href="../assets/logo-small.png">
+<link rel="apple-touch-icon" href="../assets/logo-small.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="../assets/supabase.js"></script>
+<script src="../assets/store-common.js"></script>
+<style>
+  :root{
+    --bg:#080B14; --bg-2:#0D1220; --surface:#121A2E;
+    --brown:#1A2338; --brown-light:#243050; --brown-deep:#060911;
+    --gold:#F5A623; --gold-light:#FFC65C;
+    --text:#F5F7FB; --text-soft:#9AA5C0; --line:#232C46;
+    --shadow:0 14px 34px -14px rgba(0,0,0,0.6);
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; padding-bottom:60px; }
+  h1{ font-family:'Playfair Display',serif; font-weight:700; margin:0; }
+  a{ text-decoration:none; }
+
+  .client-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); position:sticky; top:0; z-index:100; padding:16px 22px; }
+  .header-top{ max-width:1200px; margin:0 auto; display:flex; align-items:center; gap:14px; }
+  .brand{ display:flex; align-items:center; gap:12px; color:inherit; }
+  .logo-box{ width:44px; height:44px; border-radius:50%; overflow:hidden; border:1.5px solid var(--gold); flex-shrink:0; }
+  .logo-box img{ width:100%; height:100%; object-fit:cover; }
+  .brand-name{ font-family:'Playfair Display',serif; font-weight:700; font-size:18px; color:var(--text); }
+  .brand-name span{ display:block; font-family:'Inter',sans-serif; font-weight:700; font-size:10px; letter-spacing:0.14em; color:var(--gold); margin-top:2px; text-transform:uppercase; }
+  .back-link{ margin-left:auto; color:var(--text); font-size:13.5px; font-weight:700; display:flex; align-items:center; gap:6px; border:1px solid var(--gold); padding:9px 16px; border-radius:999px; }
+  .back-link:hover{ background:rgba(245,166,35,0.1); }
+
+  main.cat-main{ max-width:1200px; margin:0 auto; padding:36px 22px 80px; }
+  .cat-head{ margin-bottom:26px; }
+  .cat-head p{ font-size:12px; color:var(--gold-light); text-transform:uppercase; letter-spacing:.1em; font-weight:700; margin-bottom:6px; }
+  .cat-head h1{ font-size:26px; color:#fff; }
+  .cat-count{ font-size:13px; color:var(--text-soft); margin-top:6px; }
+
+  .prod-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  @media (min-width: 700px){ .prod-grid{ grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; } }
+  .prod-card{ background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; overflow:hidden; position:relative; transition:box-shadow .2s, border-color .2s; cursor:pointer; }
+  .prod-card:hover{ box-shadow:var(--shadow); border-color:var(--brown-light); }
+  .prod-img{ height:150px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:44px; position:relative; overflow:hidden; }
+  .prod-img-main, .prod-img-hover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .35s ease; }
+  .prod-img-hover{ opacity:0; }
+  .prod-img:hover .prod-img-hover{ opacity:1; }
+  .prod-img:hover .prod-img-main{ opacity:0; }
+  .prod-img.show-alt .prod-img-hover{ opacity:1; }
+  .prod-img.show-alt .prod-img-main{ opacity:0; }
+  .prod-tag{ position:absolute; top:9px; left:9px; background:var(--brown-light); color:var(--text); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; border:1px solid var(--gold); z-index:2; }
+  .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text); z-index:2; cursor:pointer; }
+  .prod-body{ padding:13px 14px 15px; }
+  .prod-name{ font-size:13.5px; font-weight:700; margin-bottom:3px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .prod-brand{ font-size:11px; color:var(--text-soft); margin-bottom:8px; }
+  .prod-price-row{ display:flex; align-items:center; justify-content:space-between; }
+  .prod-price{ font-weight:700; font-size:14px; color:var(--gold-light); }
+  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--brown-light); color:var(--text); font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid var(--gold); cursor:pointer; }
+  .prod-add:hover{ background:var(--gold); border-color:var(--gold-light); transform:scale(1.08); }
+  .empty-state{ text-align:center; padding:70px 20px; color:var(--text-soft); }
+
+  footer.store-footer{ background:var(--brown-deep); color:var(--text-soft); padding:34px 22px 24px; border-top:1.5px solid var(--gold); text-align:center; font-size:12.5px; }
+</style>
+</head>
+<body>
+
+<header class="client-header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="logo-box"><img src="../assets/logo.png" alt="Roque Digital"></div>
+      <div class="brand-name">Roque Digital<span>LOJA ONLINE</span></div>
+    </div>
+    <a href="index.html" class="back-link">← Voltar à loja</a>
+  </div>
+</header>
+
+<main class="cat-main">
+  <div class="cat-head">
+    <p id="secEyebrow">Roque Digital</p>
+    <h1 id="catTitle">A carregar…</h1>
+    <div class="cat-count" id="catCount"></div>
+  </div>
+  <div class="prod-grid" id="catGridProdutos"></div>
+</main>
+
+<footer class="store-footer">© 2026 Roque Digital. Todos os direitos reservados.</footer>
+
+<script>
+  const SUPABASE_URL = "https://ijbkwdtooypmgngtuwpy.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqYmt3ZHRvb3lwbWduZ3R1d3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5ODM5NTgsImV4cCI6MjEwNDU1OTk1OH0.YQLmJrag4GT_EDes3t0SfzgGyAAsDl8z1FNnSWyys1Q";
+  let supabase = null;
+  try{ supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); }catch(e){}
+
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug') || 'destaques';
+
+  const CONFIG = {
+    destaques: { titulo:'🔥 Produtos em destaque', eyebrow:'Destaques', ordenarPor:'created_at', ascendente:false },
+    vendidos:  { titulo:'🏆 Mais vendidos',        eyebrow:'Populares', ordenarPor:'vendas',      ascendente:false },
+    novidades: { titulo:'✨ Novidades',              eyebrow:'Acabaram de chegar', ordenarPor:'created_at', ascendente:false }
+  };
+
+  window.__rdProducts = [];
+
+  async function carregar(){
+    const conf = CONFIG[slug] || CONFIG.destaques;
+    document.getElementById('secEyebrow').textContent = conf.eyebrow;
+    document.getElementById('catTitle').textContent = conf.titulo;
+
+    if(!supabase){
+      document.getElementById('catGridProdutos').innerHTML = '<p class="empty-state">Não foi possível ligar à loja.</p>';
+      return;
+    }
+
+    // Título/eyebrow reais, se o gestor os tiver personalizado no painel
+    const { data: secao } = await supabase.from('home_sections').select('*').eq('slug', slug).maybeSingle();
+    if(secao){
+      if(secao.title) document.getElementById('catTitle').textContent = secao.title;
+      if(secao.eyebrow) document.getElementById('secEyebrow').textContent = secao.eyebrow;
+    }
+
+    let data = await RD.getCuratedSectionProducts(supabase, slug);
+    if(!data){
+      const r = await supabase.from('products').select('*').eq('active', true).order(conf.ordenarPor, { ascending: conf.ascendente });
+      data = (!r.error && r.data) ? r.data : (await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false })).data;
+    }
+
+    const grid = document.getElementById('catGridProdutos');
+    if(!data || data.length === 0){
+      grid.innerHTML = '<p class="empty-state">Ainda não há produtos aqui.</p>';
+      document.getElementById('catCount').textContent = '';
+      return;
+    }
+
+    window.__rdProducts = data.map(p=>({ id:p.id, name:p.name, brand:p.brand, price:Number(p.price), tag:p.tag, image:p.image_url, imageHover:p.image_url_hover }));
+    document.getElementById('catCount').textContent = `${data.length} produto${data.length===1?'':'s'}`;
+    grid.innerHTML = data.map(p=> RD.productCardHTML(p)).join('');
+  }
+
+  async function toggleFav(el){
+    const card = el.closest('.prod-card');
+    const id = card ? card.dataset.id : null;
+    const product = window.__rdProducts.find(p=>p.id===id);
+    if(!product) return;
+    const ok = await RD.requireAccount(supabase, { type:'toggle-fav', product });
+    if(!ok) return;
+    const isFav = RD.toggleFavorite(product);
+    el.textContent = isFav ? '❤️' : '♡';
+    RD.showToast(isFav ? 'Adicionado aos favoritos' : 'Removido dos favoritos');
+  }
+
+  async function addToCartFromCard(el){
+    const card = el.closest('.prod-card');
+    const id = card ? card.dataset.id : null;
+    const product = window.__rdProducts.find(p=>p.id===id);
+    if(!product) return;
+    const ok = await RD.requireAccount(supabase, { type:'add-to-cart', product });
+    if(!ok) return;
+    RD.addToCart(product, 1);
+    RD.showToast('Adicionado ao carrinho');
+  }
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.prod-fav, .prod-add')) return;
+    const card = e.target.closest('.prod-card[data-id]');
+    if(card) window.location.href = 'produto.html?id=' + encodeURIComponent(card.dataset.id);
+  });
+
+  (function(){
+    let pressTimer = null;
+    document.addEventListener('touchstart', function(e){
+      const box = e.target.closest('.prod-img');
+      if(!box || !box.querySelector('.prod-img-hover')) return;
+      pressTimer = setTimeout(()=> box.classList.add('show-alt'), 350);
+    }, { passive:true });
+    document.addEventListener('touchend', function(){ clearTimeout(pressTimer); document.querySelectorAll('.prod-img.show-alt').forEach(b=>b.classList.remove('show-alt')); });
+  })();
+
+  carregar();
+</script>
+</body>
+</html>

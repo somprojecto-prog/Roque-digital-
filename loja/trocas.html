@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trocas e devoluções — Roque Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#080B14; --bg-2:#0D1220; --surface:#121A2E;
+    --brown:#1A2338; --brown-light:#243050; --brown-deep:#060911;
+    --gold:#F5A623; --gold-light:#FFC65C;
+    --text:#F5F7FB; --text-soft:#9AA5C0; --line:#232C46;
+    --radius:14px; --shadow:0 14px 34px -14px rgba(0,0,0,0.6);
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
+  h1,h2,h3{ font-family:'Playfair Display',serif; font-weight:700; margin:0; }
+  a{ text-decoration:none; }
+
+  .client-header{ background:var(--brown-deep); border-bottom:1.5px solid var(--gold); position:sticky; top:0; z-index:100; padding:16px 22px; }
+  .header-row{ max-width:900px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .logo-circle{ width:44px; height:44px; border-radius:50%; overflow:hidden; border:1.5px solid var(--gold); flex-shrink:0; }
+  .logo-circle img{ width:100%; height:100%; object-fit:cover; }
+  .brand-name{ font-family:'Playfair Display',serif; font-weight:700; font-size:18px; color:var(--text); }
+  .brand-tag{ font-family:'Inter',sans-serif; font-weight:700; font-size:11px; letter-spacing:0.12em; color:var(--gold); margin-top:2px; text-transform:uppercase; }
+  .header-user{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text); font-size:19px; flex-shrink:0; }
+
+  main.page{ max-width:760px; margin:0 auto; padding:44px 22px 70px; }
+  .page-eyebrow{ color:var(--gold-light); font-weight:700; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; margin-bottom:10px; }
+  main.page h1{ font-size:34px; margin-bottom:26px; color:#fff; }
+  main.page h2{ font-size:20px; margin:32px 0 12px; color:var(--gold-light); }
+  main.page p{ font-size:14.5px; line-height:1.75; color:var(--text-soft); margin:0 0 14px; }
+  main.page ul{ padding-left:20px; margin:0 0 14px; }
+  main.page li{ font-size:14.5px; line-height:1.75; color:var(--text-soft); margin-bottom:6px; }
+  main.page a.inline-link{ color:var(--gold-light); }
+  .back-link{ display:inline-block; margin-bottom:22px; font-size:13px; color:var(--text-soft); }
+  .back-link:hover{ color:var(--gold-light); }
+  .info-card{ background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px 22px; margin-bottom:18px; }
+  .info-card h3{ font-size:15px; color:var(--text); margin-bottom:6px; }
+  .info-card p{ margin:0; }
+
+  footer.store-footer{ background:var(--brown-deep); color:var(--text-soft); padding:36px 22px 26px; border-top:1.5px solid var(--gold); text-align:center; }
+  .footer-links{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px 20px; margin-bottom:16px; font-size:12.5px; }
+  .footer-links a{ color:var(--text-soft); }
+  .footer-links a:hover{ color:var(--gold-light); }
+  .footer-copy{ font-size:12px; color:#5c6785; margin-top:6px; }
+</style>
+</head>
+<body>
+
+<header class="client-header">
+  <div class="header-row">
+    <a href="index.html" class="brand" style="color:inherit;">
+      <div class="logo-circle"><img src="../assets/logo.png" alt="Roque Digital"></div>
+      <div>
+        <div class="brand-name">Roque Digital</div>
+        <div class="brand-tag">Loja Online</div>
+      </div>
+    </a>
+    <a href="conta.html" class="header-user">👤</a>
+  </div>
+</header>
+
+<main class="page">
+  <a href="index.html" class="back-link">← Voltar à loja</a>
+  <p class="page-eyebrow">A tua compra, protegida</p>
+  <h1>Trocas e devoluções</h1>
+
+  <p>Queremos que fiques satisfeito com a tua compra. Se algo não correr como esperado, estamos aqui para ajudar.</p>
+  <h2>↩️ Prazo para troca ou devolução</h2>
+  <p>Tens até 7 dias após receberes o produto para solicitares troca ou devolução, desde que o artigo esteja em bom estado, sem sinais de uso e com a embalagem original.</p>
+  <h2>Quando aceitamos</h2>
+  <ul>
+    <li>O produto chegou com defeito de fabrico</li>
+    <li>Foi enviado um artigo diferente do que encomendaste</li>
+    <li>O produto não corresponde à descrição no site</li>
+  </ul>
+  <h2>Como pedir</h2>
+  <p>Entra em contacto connosco pelo WhatsApp com o número da tua encomenda e uma breve explicação — tratamos do resto o mais rápido possível.</p>
+  
+</main>
+
+<footer class="store-footer">
+  <div class="footer-links">
+    <a href="sobre.html">Sobre nós</a>
+    <a href="contactos.html">Contactos</a>
+    <a href="entregas.html">Entregas</a>
+    <a href="trocas.html">Trocas e devoluções</a>
+    <a href="privacidade.html">Privacidade</a>
+    <a href="termos.html">Termos</a>
+  </div>
+  <p class="footer-copy">© 2026 Roque Digital — Todos os direitos reservados.</p>
+</footer>
+
+</body>
+</html>
