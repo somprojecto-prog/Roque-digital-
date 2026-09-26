@@ -169,34 +169,34 @@
   .cat-card .label{ font-size:12px; font-weight:700; color:var(--text-soft); }
 
   /* ---------- Carrossel de produtos ---------- */
-  .carousel-wrap{ position:relative; margin-bottom:40px; background:var(--brown-deep); border:1.5px solid var(--gold); border-radius:20px; padding:22px 18px 26px; }
+  .carousel-wrap{ position:relative; margin-bottom:40px; }
   .carousel-inner{ position:relative; }
   .carousel-track{ display:flex; gap:14px; overflow-x:auto; scroll-behavior:smooth; scroll-snap-type:x proximity; padding:14px 6px 20px; -ms-overflow-style:none; scrollbar-width:none; perspective:1300px; }
   .carousel-track::-webkit-scrollbar{ display:none; }
-  .carousel-arrow{ position:absolute; top:50%; transform:translateY(-50%); z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid var(--line); color:var(--text); display:flex; align-items:center; justify-content:center; font-size:16px; }
-  .carousel-arrow.left{ left:-4px; } .carousel-arrow.right{ right:-4px; }
+  .carousel-arrow{ position:absolute; top:50%; transform:translateY(-50%); z-index:5; width:34px; height:34px; border-radius:50%; background:rgba(20,12,7,0.55); backdrop-filter:blur(2px); border:none; color:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; }
+  .carousel-arrow.left{ left:10px; } .carousel-arrow.right{ right:10px; }
   .carousel-dots{ display:flex; justify-content:center; gap:5px; margin-top:10px; }
   .carousel-dots .dot{ width:6px; height:6px; border-radius:50%; background:var(--line); }
   .carousel-dots .dot.active{ background:var(--gold); width:16px; border-radius:4px; transition:.2s; }
 
-  .prod-card{ flex:0 0 auto; width:190px; scroll-snap-align:center; background:var(--surface); border:1.5px solid var(--gold); border-radius:16px; overflow:hidden; position:relative; will-change:transform, opacity; transition:box-shadow .2s, border-color .2s; }
-  .prod-card:hover{ box-shadow:var(--shadow); border-color:var(--brown-light); }
-  .prod-img{ height:130px; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:42px; position:relative; overflow:hidden; }
+  .prod-card{ flex:0 0 auto; width:190px; height:250px; scroll-snap-align:center; border-radius:16px; overflow:hidden; position:relative; background:var(--bg-2); will-change:transform, opacity; transition:box-shadow .2s, transform .2s; }
+  .prod-card:hover{ box-shadow:var(--shadow); transform:translateY(-2px); }
+  .prod-img{ position:absolute; inset:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:42px; overflow:hidden; }
   .prod-img-main, .prod-img-hover{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:opacity .35s ease; }
   .prod-img-hover{ opacity:0; }
   .prod-img:hover .prod-img-hover{ opacity:1; }
   .prod-img:hover .prod-img-main{ opacity:0; }
   .prod-img.show-alt .prod-img-hover{ opacity:1; }
   .prod-img.show-alt .prod-img-main{ opacity:0; }
-  .prod-tag{ position:absolute; top:9px; left:9px; background:var(--brown-light); color:var(--text); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; border:1px solid var(--gold); z-index:2; }
-  .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--text); transition:.2s; z-index:2; }
-  .prod-body{ padding:13px 14px 15px; }
-  .prod-name{ font-size:13.5px; font-weight:700; margin-bottom:3px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .prod-brand{ font-size:11px; color:var(--text-soft); margin-bottom:8px; }
+  .prod-tag{ position:absolute; top:9px; left:9px; background:rgba(10,6,4,0.65); color:var(--gold-light); font-size:9.5px; font-weight:800; padding:3px 9px; border-radius:999px; border:1px solid var(--gold); z-index:2; }
+  .prod-fav{ position:absolute; top:9px; right:9px; width:28px; height:28px; border-radius:50%; background:rgba(10,6,4,0.5); display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; transition:.2s; z-index:2; }
+  .prod-body{ position:absolute; left:0; right:0; bottom:0; z-index:2; padding:34px 12px 12px; background:linear-gradient(to top, rgba(10,6,4,0.94) 15%, rgba(10,6,4,0.55) 60%, transparent 100%); }
+  .prod-name{ font-size:13.5px; font-weight:700; margin-bottom:3px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .prod-brand{ font-size:11px; color:rgba(255,255,255,0.65); margin-bottom:8px; }
   .prod-price-row{ display:flex; align-items:center; justify-content:space-between; }
   .prod-price{ font-weight:700; font-size:14px; color:var(--gold-light); }
-  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--brown-light); color:var(--text); font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; border:1px solid var(--gold); }
-  .prod-add:hover{ background:var(--gold); border-color:var(--gold-light); transform:scale(1.08); }
+  .prod-add{ width:29px; height:29px; border-radius:50%; background:var(--gold); color:var(--brown-deep); font-size:15px; font-weight:800; display:flex; align-items:center; justify-content:center; transition:.2s; flex-shrink:0; border:none; }
+  .prod-add:hover{ background:var(--gold-light); transform:scale(1.08); }
   .empty-state{ padding:30px 10px; text-align:center; color:var(--text-soft); font-size:13px; }
 
   /* ---------- Promoção ---------- */
